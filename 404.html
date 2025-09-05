@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة كار | الصفحة غير موجودة</title>
+    <link rel="stylesheet" href="css/style.css">
+    <style>
+        .error-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 70vh;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .error-code {
+            font-size: 8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            margin: 0;
+            line-height: 1;
+        }
+        
+        .error-message {
+            font-size: 2rem;
+            margin: 1rem 0 2rem;
+            color: var(--text-color);
+        }
+        
+        .back-home {
+            display: inline-block;
+            padding: 0.8rem 1.5rem;
+            background-color: var(--primary-color);
+            color: white;
+            text-decoration: none;
+            border-radius: 5px;
+            font-weight: bold;
+            transition: background-color 0.3s ease;
+        }
+        
+        .back-home:hover {
+            background-color: var(--primary-dark);
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+                <a href="index.html">كار</a>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <div class="container">
+            <div class="error-container">
+                <h1 class="error-code">404</h1>
+                <p class="error-message">عذراً، الصفحة التي تبحث عنها غير موجودة</p>
+                <a href="index.html" class="back-home">العودة للصفحة الرئيسية</a>
+            </div>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <div class="container">
+            <p>جميع الحقوق محفوظة &copy; منصة كار 2023</p>
+        </div>
+    </footer>
+</body>
+</html>

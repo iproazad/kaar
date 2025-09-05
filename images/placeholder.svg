@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="200" height="200" viewBox="0 0 200 200">
+  <rect width="200" height="200" fill="#e0e0e0"/>
+  <text x="100" y="100" font-family="Arial" font-size="16" text-anchor="middle" fill="#757575">صورة المستخدم</text>
+  <path d="M100,80 C111,80 120,71 120,60 C120,49 111,40 100,40 C89,40 80,49 80,60 C80,71 89,80 100,80 Z M100,90 C80,90 60,100 60,120 L60,130 L140,130 L140,120 C140,100 120,90 100,90 Z" fill="#757575"/>
+</svg>

@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>منصة كار | الرئيسية</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>كار</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html" class="active">الرئيسية</a></li>
+                    <li><a href="#">الأقسام</a>
+                        <ul class="dropdown">
+                            <li><a href="#" data-category="all">جميع الأقسام</a></li>
+                            <li><a href="#" data-category="developers">المطورين</a></li>
+                            <li><a href="#" data-category="designers">المصممين</a></li>
+                            <li><a href="#" data-category="companies">الشركات</a></li>
+                        </ul>
+                    </li>
+                    <li><a href="admin/login.html">تسجيل الدخول</a></li>
+                </ul>
+            </nav>
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="ابحث عن شخص...">
+                <button type="button"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div class="container">
+                <h2>ابحث عن المحترفين في مجالك</h2>
+                <p>منصة كار تجمع أفضل المحترفين في مختلف المجالات</p>
+            </div>
+        </section>
+
+        <section class="profiles">
+            <div class="container">
+                <h2>الملفات الشخصية</h2>
+                <div class="filter-buttons">
+                    <button class="filter-btn active" data-category="all">الكل</button>
+                    <button class="filter-btn" data-category="developers">المطورين</button>
+                    <button class="filter-btn" data-category="designers">المصممين</button>
+                    <button class="filter-btn" data-category="companies">الشركات</button>
+                </div>
+                <div class="cards-container" id="profileCards">
+                    <!-- سيتم إضافة البطاقات ديناميكيًا من ملف JavaScript -->
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <div class="container">
+            <p>جميع الحقوق محفوظة &copy; 2023 - منصة كار</p>
+        </div>
+    </footer>
+
+    <script src="js/data.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
