@@ -1,15 +1,26 @@
 // تهيئة صفحة المستخدمين
-document.addEventListener('DOMContentLoaded', function() {
-    // تهيئة قائمة الأقسام في النموذج
-    const categorySelect = document.getElementById('category');
-    if (categorySelect) {
-        // إضافة الأقسام إلى القائمة المنسدلة
-        categories.forEach(category => {
-            const option = document.createElement('option');
-            option.value = category.id;
-            option.textContent = category.name;
-            categorySelect.appendChild(option);
-        });
+document.addEventListener('DOMContentLoaded', async function() {
+    try {
+        // تحميل البيانات من الخادم
+        await Promise.all([
+            loadCategories(),
+            loadProfiles()
+        ]);
+        
+        // تهيئة قائمة الأقسام في النموذج
+        const categorySelect = document.getElementById('category');
+        if (categorySelect) {
+            // إضافة الأقسام إلى القائمة المنسدلة
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                categorySelect.appendChild(option);
+            });
+        }
+    } catch (error) {
+        console.error('خطأ في تهيئة صفحة المستخدمين:', error);
+        alert('حدث خطأ أثناء تحميل البيانات');
     }
     
     // تهيئة حقل رابط الصورة
@@ -47,7 +58,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // تهيئة نموذج إضافة مستخدم
     const addUserForm = document.getElementById('addUserForm');
     if (addUserForm) {
-        addUserForm.addEventListener('submit', function(e) {
+        addUserForm.addEventListener('submit', async function(e) {
             e.preventDefault();
             
             // الحصول على بيانات النموذج
@@ -68,34 +79,36 @@ document.addEventListener('DOMContentLoaded', function() {
                 return;
             }
             
-            // في التطبيق الحقيقي، سيتم إرسال البيانات إلى الخادم
-            // هنا نقوم بمحاكاة إضافة المستخدم
-            
-            // إنشاء كائن المستخدم الجديد
-            const newUser = {
-                id: profiles.length + 1,
-                name: formData.name,
-                job: formData.job,
-                category: formData.category,
-                contact: formData.contact || '',
-                image: formData.imageUrl || '../images/placeholder.svg' // استخدام رابط الصورة المدخل أو الصورة الافتراضية
-            };
-            
-            // إضافة المستخدم إلى المصفوفة
-            profiles.push(newUser);
-            
-            // حفظ البيانات في localStorage
-            localStorage.setItem('profiles', JSON.stringify(profiles));
-            
-            // إضافة المستخدم إلى الجدول
-            addUserToTable(newUser);
-            
-            // إعادة تعيين النموذج
-            addUserForm.reset();
-            imagePreview.innerHTML = '';
-            
-            // عرض رسالة نجاح
-            alert('تم إضافة المستخدم بنجاح');
+            try {
+                // إنشاء كائن المستخدم الجديد
+                const newUser = {
+                    name: formData.name,
+                    job: formData.job,
+                    category: formData.category,
+                    contact: formData.contact || '',
+                    image: formData.imageUrl || '../images/placeholder.svg' // استخدام رابط الصورة المدخل أو الصورة الافتراضية
+                };
+                
+                // إضافة المستخدم إلى الخادم
+                const addedUser = await addProfile(newUser);
+                
+                if (addedUser) {
+                    // إضافة المستخدم إلى الجدول
+                    addUserToTable(addedUser);
+                    
+                    // إعادة تعيين النموذج
+                    addUserForm.reset();
+                    imagePreview.innerHTML = '';
+                    
+                    // عرض رسالة نجاح
+                    alert('تم إضافة المستخدم بنجاح');
+                } else {
+                    alert('حدث خطأ أثناء إضافة المستخدم');
+                }
+            } catch (error) {
+                console.error('خطأ في إضافة المستخدم:', error);
+                alert('حدث خطأ أثناء إضافة المستخدم');
+            }
         });
     }
     
@@ -112,18 +125,127 @@ document.addEventListener('DOMContentLoaded', function() {
     loadUsersTable();
 });
 
+// دالة لتحميل الملفات الشخصية من الخادم
+async function loadProfiles() {
+    try {
+        const response = await fetch('http://localhost:3000/api/profiles');
+        if (!response.ok) {
+            throw new Error(`خطأ في الاستجابة: ${response.status}`);
+        }
+        const data = await response.json();
+        profiles = data;
+        return profiles;
+    } catch (error) {
+        console.error('خطأ في تحميل الملفات الشخصية:', error);
+        throw error;
+    }
+}
+
+// دالة لإضافة ملف شخصي جديد إلى الخادم
+async function addProfile(profile) {
+    try {
+        const response = await fetch('http://localhost:3000/api/profiles', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(profile)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`خطأ في الاستجابة: ${response.status}`);
+        }
+        
+        const addedProfile = await response.json();
+        profiles.push(addedProfile);
+        return addedProfile;
+    } catch (error) {
+        console.error('خطأ في إضافة الملف الشخصي:', error);
+        throw error;
+    }
+}
+
+// دالة لتحديث ملف شخصي على الخادم
+async function updateProfile(profileId, updatedData) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${profileId}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(updatedData)
+        });
+        
+        if (!response.ok) {
+            throw new Error(`خطأ في الاستجابة: ${response.status}`);
+        }
+        
+        const updatedProfile = await response.json();
+        
+        // تحديث الملف الشخصي في المصفوفة المحلية
+        const index = profiles.findIndex(profile => profile.id === profileId);
+        if (index !== -1) {
+            profiles[index] = updatedProfile;
+        }
+        
+        return updatedProfile;
+    } catch (error) {
+        console.error('خطأ في تحديث الملف الشخصي:', error);
+        throw error;
+    }
+}
+
+// دالة لحذف ملف شخصي من الخادم
+async function removeProfile(profileId) {
+    try {
+        const response = await fetch(`http://localhost:3000/api/profiles/${profileId}`, {
+            method: 'DELETE'
+        });
+        
+        if (!response.ok) {
+            throw new Error(`خطأ في الاستجابة: ${response.status}`);
+        }
+        
+        // حذف الملف الشخصي من المصفوفة المحلية
+        const index = profiles.findIndex(profile => profile.id === profileId);
+        if (index !== -1) {
+            profiles.splice(index, 1);
+        }
+        
+        return true;
+    } catch (error) {
+        console.error('خطأ في حذف الملف الشخصي:', error);
+        throw error;
+    }
+}
+
 // دالة لتحميل جدول المستخدمين
-function loadUsersTable() {
+async function loadUsersTable() {
     const usersTable = document.getElementById('usersTable');
     if (!usersTable) return;
     
-    // تفريغ الجدول
-    usersTable.innerHTML = '';
-    
-    // إضافة المستخدمين إلى الجدول
-    profiles.forEach(user => {
-        addUserToTable(user);
-    });
+    try {
+        // تحميل الملفات الشخصية من الخادم
+        await loadProfiles();
+        
+        // تفريغ الجدول
+        usersTable.innerHTML = '';
+        
+        if (profiles.length === 0) {
+            const row = document.createElement('tr');
+            row.innerHTML = `<td colspan="5" class="text-center">لا يوجد مستخدمين</td>`;
+            usersTable.appendChild(row);
+            return;
+        }
+        
+        // إضافة المستخدمين إلى الجدول
+        profiles.forEach(user => {
+            addUserToTable(user);
+        });
+    } catch (error) {
+        console.error('خطأ في تحميل جدول المستخدمين:', error);
+        usersTable.innerHTML = `<tr><td colspan="5" class="text-center">حدث خطأ أثناء تحميل البيانات</td></tr>`;
+    }
 }
 
 // دالة لإضافة مستخدم إلى الجدول
@@ -208,62 +330,66 @@ function getFormData(form) {
 }
 
 // دالة لتحرير بيانات المستخدم
-function editUser(userId) {
-    // في التطبيق الحقيقي، سيتم توجيه المستخدم إلى صفحة تحرير المستخدم
-    // هنا نقوم بمحاكاة تحرير المستخدم باستخدام مربع حوار بسيط
-    
-    // البحث عن المستخدم
-    const user = profiles.find(u => u.id === userId);
-    if (!user) {
-        alert('المستخدم غير موجود');
-        return;
-    }
-    
-    // طلب البيانات الجديدة من المستخدم
-    const newName = prompt('الاسم الجديد:', user.name);
-    if (newName === null) return;
-    
-    const newJob = prompt('العمل الجديد:', user.job);
-    if (newJob === null) return;
-    
-    const newImageUrl = prompt('رابط الصورة الجديد:', user.image);
-    if (newImageUrl === null) return;
-    
-    // تحديث بيانات المستخدم
-    user.name = newName;
-    user.job = newJob;
-    user.image = newImageUrl || '../images/placeholder.svg';
-    
-    // تحديث localStorage
-    localStorage.setItem('profiles', JSON.stringify(profiles));
-    
-    // إعادة تحميل الجدول
-    loadUsersTable();
-    
-    // عرض رسالة نجاح
-    alert('تم تحديث بيانات المستخدم بنجاح');
-}
-
-// دالة لحذف المستخدم
-function deleteUser(userId) {
-    showConfirmDialog('هل أنت متأكد من حذف هذا المستخدم؟', function() {
-        // البحث عن موقع المستخدم في المصفوفة
-        const userIndex = profiles.findIndex(u => u.id === userId);
-        if (userIndex === -1) {
+async function editUser(userId) {
+    try {
+        // البحث عن المستخدم
+        const user = profiles.find(u => u.id === userId);
+        if (!user) {
             alert('المستخدم غير موجود');
             return;
         }
         
-        // حذف المستخدم من المصفوفة
-        profiles.splice(userIndex, 1);
+        // طلب البيانات الجديدة من المستخدم
+        const newName = prompt('الاسم الجديد:', user.name);
+        if (newName === null) return;
         
-        // تحديث localStorage
-        localStorage.setItem('profiles', JSON.stringify(profiles));
+        const newJob = prompt('العمل الجديد:', user.job);
+        if (newJob === null) return;
         
-        // إعادة تحميل الجدول
-        loadUsersTable();
+        const newImageUrl = prompt('رابط الصورة الجديد:', user.image);
+        if (newImageUrl === null) return;
         
-        // عرض رسالة نجاح
-        alert('تم حذف المستخدم بنجاح');
+        // تحديث بيانات المستخدم على الخادم
+        const updatedUser = await updateProfile(userId, {
+            name: newName,
+            job: newJob,
+            image: newImageUrl || '../images/placeholder.svg'
+        });
+        
+        if (updatedUser) {
+            // إعادة تحميل الجدول
+            loadUsersTable();
+            
+            // عرض رسالة نجاح
+            alert('تم تحديث بيانات المستخدم بنجاح');
+        } else {
+            alert('حدث خطأ أثناء تحديث بيانات المستخدم');
+        }
+    } catch (error) {
+        console.error('خطأ في تحرير المستخدم:', error);
+        alert('حدث خطأ أثناء تحديث بيانات المستخدم');
+    }
+}
+
+// دالة لحذف المستخدم
+function deleteUser(userId) {
+    showConfirmDialog('هل أنت متأكد من حذف هذا المستخدم؟', async function() {
+        try {
+            // حذف المستخدم من الخادم
+            const success = await removeProfile(userId);
+            
+            if (success) {
+                // إعادة تحميل الجدول
+                loadUsersTable();
+                
+                // عرض رسالة نجاح
+                alert('تم حذف المستخدم بنجاح');
+            } else {
+                alert('حدث خطأ أثناء حذف المستخدم');
+            }
+        } catch (error) {
+            console.error('خطأ في حذف المستخدم:', error);
+            alert('حدث خطأ أثناء حذف المستخدم');
+        }
     });
 }

@@ -145,15 +145,76 @@ searchInput.addEventListener('input', () => {
 });
 
 // تهيئة الصفحة بعرض جميع الملفات الشخصية
-document.addEventListener('DOMContentLoaded', () => {
-    // تحميل البيانات من localStorage
-    if (localStorage.getItem('profiles')) {
-        profiles = JSON.parse(localStorage.getItem('profiles'));
+document.addEventListener('DOMContentLoaded', async () => {
+    try {
+        // تحميل البيانات من الخادم
+        await initData();
+        
+        // إنشاء أزرار التصفية للأقسام الديناميكية
+        updateCategoryFilters();
+        
+        // عرض البطاقات
+        createProfileCards(profiles);
+    } catch (error) {
+        console.error('خطأ في تهيئة الصفحة:', error);
+        profileCardsContainer.innerHTML = '<p class="error-message">حدث خطأ أثناء تحميل البيانات. يرجى تحديث الصفحة.</p>';
     }
-    
-    if (localStorage.getItem('categories')) {
-        categories = JSON.parse(localStorage.getItem('categories'));
-    }
-    
-    createProfileCards(profiles);
 });
+
+// دالة لتحديث أزرار تصفية الأقسام
+function updateCategoryFilters() {
+    // تحديث القائمة المنسدلة
+    const dropdown = document.querySelector('.dropdown');
+    if (dropdown) {
+        // الاحتفاظ بالعنصر الأول (جميع الأقسام)
+        const firstItem = dropdown.querySelector('li:first-child');
+        dropdown.innerHTML = '';
+        dropdown.appendChild(firstItem);
+        
+        // إضافة الأقسام الديناميكية
+        categories.forEach(category => {
+            const li = document.createElement('li');
+            li.innerHTML = `<a href="#" data-category="${category.id}">${category.name}</a>`;
+            dropdown.appendChild(li);
+        });
+        
+        // إعادة إضافة مستمعي الأحداث
+        const categoryLinks = document.querySelectorAll('.dropdown a');
+        categoryLinks.forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const category = link.getAttribute('data-category');
+                filterProfiles(category);
+            });
+        });
+    }
+    
+    // تحديث أزرار التصفية
+    const filterButtonsContainer = document.querySelector('.filter-buttons');
+    if (filterButtonsContainer) {
+        // الاحتفاظ بالزر الأول (الكل)
+        const firstButton = filterButtonsContainer.querySelector('button:first-child');
+        filterButtonsContainer.innerHTML = '';
+        filterButtonsContainer.appendChild(firstButton);
+        
+        // إضافة أزرار الأقسام الديناميكية
+        categories.forEach(category => {
+            const button = document.createElement('button');
+            button.className = 'filter-btn';
+            button.setAttribute('data-category', category.id);
+            button.textContent = category.name;
+            filterButtonsContainer.appendChild(button);
+        });
+        
+        // إعادة تعريف متغير أزرار التصفية
+        const newFilterButtons = document.querySelectorAll('.filter-btn');
+        
+        // إعادة إضافة مستمعي الأحداث
+        newFilterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const category = button.getAttribute('data-category');
+                filterProfiles(category);
+            });
+        });
+    }
+}
