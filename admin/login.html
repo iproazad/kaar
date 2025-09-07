@@ -35,6 +35,46 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
+    <!-- تهيئة Firebase -->
+    <script>
+        // تكوين Firebase
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBeu2_k79cWdO8FteGAqPNnjYDu0QM3JW8", 
+            authDomain: "karkar-36376.firebaseapp.com", 
+            projectId: "karkar-36376", 
+            storageBucket: "karkar-36376.firebasestorage.app", 
+            messagingSenderId: "1068465316432", 
+            appId: "1:1068465316432:web:88782a9008ed013a676755", 
+            measurementId: "G-EJ0PSRF642" 
+        };
+        
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+        
+        // تعديل إعدادات Firestore للسماح بالوصول في وضع الاختبار
+        db.settings({
+            ignoreUndefinedProperties: true,
+            cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+        });
+        
+        // إضافة معالج للأخطاء العامة في Firebase
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (user) {
+                console.log('تم تسجيل الدخول بنجاح:', user.email);
+            }
+        }, function(error) {
+            console.error('خطأ في المصادقة:', error);
+        });
+        
+        console.log('تم تهيئة Firebase وقاعدة البيانات Firestore');
+    </script>
+    
     <script src="js/login.js"></script>
 </body>
 </html>
