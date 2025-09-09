@@ -64,6 +64,11 @@ function isValidImageUrl(url) {
 
 // دالة لتحويل رابط صفحة عرض الصورة من ImgBB إلى رابط مباشر للصورة
 function convertImgBBUrl(url) {
+    // إذا كان الرابط فارغًا أو غير محدد، نعيد رابط الصورة الافتراضية
+    if (!url) {
+        return 'img/default-avatar.png';
+    }
+    
     // إذا كان الرابط مباشراً بالفعل، نعيده كما هو
     if (url.includes('i.ibb.co')) {
         return url;
@@ -96,34 +101,106 @@ function initApp() {
     
     // Setup dark mode
     setupDarkMode();
+    
+    // Add viewport meta tag for better mobile responsiveness if not exists
+    if (!document.querySelector('meta[name="viewport"]')) {
+        const viewportMeta = document.createElement('meta');
+        viewportMeta.name = 'viewport';
+        viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+        document.head.appendChild(viewportMeta);
+    }
+}
+
+// دالة معالجة تغيير حجم الشاشة
+function handleScreenResize() {
+    const personsGrid = document.getElementById('personsGrid');
+    if (personsGrid) {
+        if (window.innerWidth <= 480) {
+            personsGrid.className = 'grid grid-cols-2 gap-2';
+        } else if (window.innerWidth <= 640) {
+            personsGrid.className = 'grid grid-cols-2 gap-4';
+        } else if (window.innerWidth <= 768) {
+            personsGrid.className = 'grid grid-cols-3 gap-4';
+        } else {
+            personsGrid.className = 'grid grid-cols-4 gap-6';
+        }
+    }
 }
 
 // Check if user is authenticated
 function checkAuthState() {
-    auth.onAuthStateChanged(user => {
+    auth.onAuthStateChanged(async user => {
         const loginBtn = document.getElementById('loginBtn');
+        const registerBtn = document.getElementById('registerBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const dashboardBtn = document.getElementById('dashboardBtn');
         
         if (user) {
             console.log('User is signed in:', user.email);
             loginBtn.classList.add('hidden');
+            registerBtn.classList.add('hidden');
             logoutBtn.classList.remove('hidden');
-            dashboardBtn.classList.remove('hidden');
             
-            // Load admin data
-            loadAdmins();
+            // Add user profile button
+            let userProfileBtn = document.getElementById('userProfileBtn');
+            if (!userProfileBtn) {
+                userProfileBtn = document.createElement('button');
+                userProfileBtn.id = 'userProfileBtn';
+                userProfileBtn.className = 'bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition duration-300 ml-2';
+                userProfileBtn.innerHTML = '<i class="fas fa-user ml-2"></i>الملف الشخصي';
+                userProfileBtn.addEventListener('click', () => {
+                    loadUserProfile(user.uid);
+                    document.getElementById('userProfileModal').classList.remove('hidden');
+                });
+                
+                // Insert before logout button
+                logoutBtn.parentNode.insertBefore(userProfileBtn, logoutBtn);
+            } else {
+                userProfileBtn.classList.remove('hidden');
+            }
+            
+            // Check user role
+            try {
+                const userDoc = await db.collection('users').doc(user.uid).get();
+                if (userDoc.exists) {
+                    const userData = userDoc.data();
+                    if (userData.role === 'admin') {
+                        // Admin user - show dashboard button
+                        dashboardBtn.classList.remove('hidden');
+                        // Load admin data
+                        loadAdmins();
+                    } else {
+                        // Regular user - hide dashboard button
+                        dashboardBtn.classList.add('hidden');
+                    }
+                }
+            } catch (error) {
+                console.error('Error checking user role:', error);
+            }
         } else {
             console.log('User is signed out');
             loginBtn.classList.remove('hidden');
+            registerBtn.classList.remove('hidden');
             logoutBtn.classList.add('hidden');
             dashboardBtn.classList.add('hidden');
+            
+            // Hide user profile button if exists
+            const userProfileBtn = document.getElementById('userProfileBtn');
+            if (userProfileBtn) {
+                userProfileBtn.classList.add('hidden');
+            }
         }
     });
 }
 
 // Setup all event listeners
 function setupEventListeners() {
+    // إضافة استجابة لتغيير حجم الشاشة
+    window.addEventListener('resize', handleScreenResize);
+    
+    // تنفيذ استجابة الشاشة عند بدء التطبيق
+    handleScreenResize();
+    
     // Dark mode toggle
     const darkModeToggle = document.getElementById('darkModeToggle');
     darkModeToggle.addEventListener('click', toggleDarkMode);
@@ -145,9 +222,36 @@ function setupEventListeners() {
     const loginForm = document.getElementById('loginForm');
     loginForm.addEventListener('submit', handleLogin);
     
+    // User profile modal
+    const closeUserProfileModal = document.getElementById('closeUserProfileModal');
+    closeUserProfileModal.addEventListener('click', () => {
+        document.getElementById('userProfileModal').classList.add('hidden');
+        // Hide edit form if open
+        document.getElementById('editUserProfileForm').classList.add('hidden');
+    });
+    
     // Logout button
     const logoutBtn = document.getElementById('logoutBtn');
     logoutBtn.addEventListener('click', handleLogout);
+    
+    // Register button
+    const registerBtn = document.getElementById('registerBtn');
+    const registerModal = document.getElementById('registerModal');
+    const closeRegisterModal = document.getElementById('closeRegisterModal');
+    
+    registerBtn.addEventListener('click', () => {
+        registerModal.classList.remove('hidden');
+        // Load sections for the dropdown
+        loadSectionsForRegister();
+    });
+    
+    closeRegisterModal.addEventListener('click', () => {
+        registerModal.classList.add('hidden');
+    });
+    
+    // Register form
+    const registerForm = document.getElementById('registerForm');
+    registerForm.addEventListener('submit', handleRegister);
     
     // Dashboard button
     const dashboardBtn = document.getElementById('dashboardBtn');
@@ -233,6 +337,275 @@ function setupEventListeners() {
     // Search functionality
     const searchInput = document.getElementById('searchInput');
     searchInput.addEventListener('input', handleSearch);
+}
+
+// Load sections for register form
+async function loadSectionsForRegister() {
+    const sectionSelect = document.getElementById('registerSection');
+    sectionSelect.innerHTML = '<option value="" disabled selected>اختر القسم</option>';
+    
+    try {
+        const sectionsSnapshot = await db.collection('sections').get();
+        
+        if (sectionsSnapshot.empty) {
+            console.log('لا توجد أقسام متاحة');
+            return;
+        }
+        
+        sectionsSnapshot.forEach(doc => {
+            const section = doc.data();
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = section.name;
+            sectionSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('خطأ في تحميل الأقسام:', error);
+        alert('حدث خطأ أثناء تحميل الأقسام. يرجى المحاولة مرة أخرى.');
+    }
+}
+
+// Handle register form submission
+async function handleRegister(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('registerEmail').value;
+    const password = document.getElementById('registerPassword').value;
+    const name = document.getElementById('registerName').value;
+    const job = document.getElementById('registerJob').value;
+    const sectionId = document.getElementById('registerSection').value;
+    const imageUrl = document.getElementById('registerImageUrl').value;
+    
+    // Validate image URL
+    let processedImageUrl = imageUrl;
+    if (imageUrl.includes('ibb.co/') && !imageUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
+        // Convert ImgBB share URL to direct URL if needed
+        try {
+            // This is a placeholder. In a real implementation, you might need to
+            // use an API or different approach to get the direct URL from ImgBB
+            processedImageUrl = await getDirectImageUrl(imageUrl);
+        } catch (error) {
+            console.error('خطأ في معالجة رابط الصورة:', error);
+            alert('حدث خطأ في معالجة رابط الصورة. يرجى التأكد من صحة الرابط.');
+            return;
+        }
+    }
+    
+    try {
+        // Create user with email and password
+        const userCredential = await auth.createUserWithEmailAndPassword(email, password);
+        const user = userCredential.user;
+        
+        // Add user to Firestore with limited permissions
+        await db.collection('users').doc(user.uid).set({
+            email: email,
+            role: 'user', // Regular user role with limited permissions
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Add person information to Firestore
+        await db.collection('people').add({
+            name: name,
+            job: job,
+            sectionId: sectionId,
+            imageUrl: processedImageUrl,
+            userId: user.uid, // Link person to user account
+            createdAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Hide modal and reset form
+        document.getElementById('registerModal').classList.add('hidden');
+        document.getElementById('registerForm').reset();
+        
+        // Show success message
+        alert('تم إنشاء الحساب بنجاح!');
+        
+        // Sign in the user automatically
+        await auth.signInWithEmailAndPassword(email, password);
+    } catch (error) {
+        console.error('خطأ في التسجيل:', error);
+        alert(`خطأ في التسجيل: ${error.message}`);
+    }
+}
+
+// Helper function to get direct image URL from ImgBB share URL
+async function getDirectImageUrl(shareUrl) {
+    // إذا كان الرابط فارغًا أو غير محدد، نعيد رابط الصورة الافتراضية
+    if (!shareUrl) {
+        return 'img/default-avatar.png';
+    }
+    
+    // If it's already a direct URL, return it
+    if (shareUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+        return shareUrl;
+    }
+    
+    // إذا كان الرابط من ImgBB، نحاول تحويله إلى رابط مباشر
+    if (shareUrl.includes('ibb.co/')) {
+        // نستخرج معرف الصورة من الرابط
+        const imageId = shareUrl.split('/').pop();
+        // نعيد رابط مباشر للصورة باستخدام معرف الصورة
+        return `https://i.ibb.co/${imageId}/image.jpg`;
+    }
+    
+    // For other URLs, we'll append a default extension if needed
+    return shareUrl.includes('?') ? shareUrl : `${shareUrl}.jpg`;
+}
+
+// Load user profile data
+async function loadUserProfile(userId) {
+    try {
+        // Find the person document linked to this user
+        const peopleSnapshot = await db.collection('people')
+            .where('userId', '==', userId)
+            .limit(1)
+            .get();
+        
+        if (peopleSnapshot.empty) {
+            console.log('No profile found for this user');
+            return;
+        }
+        
+        // Get the person document
+        const personDoc = peopleSnapshot.docs[0];
+        const personData = personDoc.data();
+        
+        // Store the person ID for later use
+        document.getElementById('userProfileContent').dataset.personId = personDoc.id;
+        
+        // Set profile data
+        document.getElementById('userProfileImage').src = personData.imageUrl || 'img/default-avatar.png';
+        document.getElementById('userProfileName').textContent = personData.name;
+        document.getElementById('userProfileJob').textContent = personData.job;
+        
+        // Get section name
+        if (personData.sectionId) {
+            const sectionDoc = await db.collection('sections').doc(personData.sectionId).get();
+            if (sectionDoc.exists) {
+                document.getElementById('userProfileSection').textContent = sectionDoc.data().name;
+            }
+        }
+        
+        // Setup edit form
+        const editBtn = document.getElementById('editUserProfileBtn');
+        const editForm = document.getElementById('editUserProfileForm');
+        const cancelBtn = document.getElementById('cancelEditUserProfile');
+        
+        editBtn.addEventListener('click', async () => {
+            // Populate edit form
+            document.getElementById('editUserName').value = personData.name;
+            document.getElementById('editUserJob').value = personData.job;
+            document.getElementById('editUserImageUrl').value = personData.imageUrl;
+            
+            // Load sections for dropdown
+            await loadSectionsForUserEdit();
+            
+            // Set selected section
+            if (personData.sectionId) {
+                document.getElementById('editUserSection').value = personData.sectionId;
+            }
+            
+            // Show edit form
+            editForm.classList.remove('hidden');
+        });
+        
+        cancelBtn.addEventListener('click', () => {
+            editForm.classList.add('hidden');
+        });
+        
+        // Handle form submission
+        editForm.addEventListener('submit', handleEditUserProfile);
+    } catch (error) {
+        console.error('Error loading user profile:', error);
+        alert('حدث خطأ أثناء تحميل الملف الشخصي. يرجى المحاولة مرة أخرى.');
+    }
+}
+
+// Load sections for user profile edit
+async function loadSectionsForUserEdit() {
+    const sectionSelect = document.getElementById('editUserSection');
+    sectionSelect.innerHTML = '<option value="" disabled selected>اختر القسم</option>';
+    
+    try {
+        const sectionsSnapshot = await db.collection('sections').get();
+        
+        if (sectionsSnapshot.empty) {
+            console.log('لا توجد أقسام متاحة');
+            return;
+        }
+        
+        sectionsSnapshot.forEach(doc => {
+            const section = doc.data();
+            const option = document.createElement('option');
+            option.value = doc.id;
+            option.textContent = section.name;
+            sectionSelect.appendChild(option);
+        });
+    } catch (error) {
+        console.error('خطأ في تحميل الأقسام:', error);
+        alert('حدث خطأ أثناء تحميل الأقسام. يرجى المحاولة مرة أخرى.');
+    }
+}
+
+// Handle edit user profile form submission
+async function handleEditUserProfile(e) {
+    e.preventDefault();
+    
+    const personId = document.getElementById('userProfileContent').dataset.personId;
+    if (!personId) {
+        alert('لم يتم العثور على معرف الشخص');
+        return;
+    }
+    
+    const name = document.getElementById('editUserName').value;
+    const job = document.getElementById('editUserJob').value;
+    const sectionId = document.getElementById('editUserSection').value;
+    const imageUrl = document.getElementById('editUserImageUrl').value;
+    
+    // Validate image URL
+    let processedImageUrl = imageUrl;
+    if (imageUrl.includes('ibb.co/') && !imageUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
+        try {
+            processedImageUrl = await getDirectImageUrl(imageUrl);
+        } catch (error) {
+            console.error('خطأ في معالجة رابط الصورة:', error);
+            alert('حدث خطأ في معالجة رابط الصورة. يرجى التأكد من صحة الرابط.');
+            return;
+        }
+    }
+    
+    try {
+        // Update person document
+        await db.collection('people').doc(personId).update({
+            name: name,
+            job: job,
+            sectionId: sectionId,
+            imageUrl: processedImageUrl,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        });
+        
+        // Update UI
+        document.getElementById('userProfileImage').src = processedImageUrl;
+        document.getElementById('userProfileName').textContent = name;
+        document.getElementById('userProfileJob').textContent = job;
+        
+        // Get section name
+        if (sectionId) {
+            const sectionDoc = await db.collection('sections').doc(sectionId).get();
+            if (sectionDoc.exists) {
+                document.getElementById('userProfileSection').textContent = sectionDoc.data().name;
+            }
+        }
+        
+        // Hide edit form
+        document.getElementById('editUserProfileForm').classList.add('hidden');
+        
+        // Show success message
+        alert('تم تحديث البيانات بنجاح!');
+    } catch (error) {
+        console.error('خطأ في تحديث البيانات:', error);
+        alert(`خطأ في تحديث البيانات: ${error.message}`);
+    }
 }
 
 // Handle login form submission
@@ -438,10 +811,6 @@ async function loadPersons() {
         }
         
         try {
-            console.log('جاري جلب بيانات الأشخاص من Firestore...');
-            const snapshot = await window.db.collection('persons').get();
-            console.log(`تم جلب ${snapshot.size} شخص من قاعدة البيانات`);
-            
             // Clear existing persons
             const personsGrid = document.getElementById('personsGrid');
             if (!personsGrid) {
@@ -451,30 +820,87 @@ async function loadPersons() {
             personsGrid.innerHTML = '';
             console.log('تم مسح العناصر السابقة من الشبكة');
             
+            // Load persons from 'persons' collection
+            console.log('جاري جلب بيانات الأشخاص من Firestore...');
+            const personsSnapshot = await window.db.collection('persons').get();
+            console.log(`تم جلب ${personsSnapshot.size} شخص من مجموعة persons`);
+            
+            // تطبيق استجابة الشاشة على شبكة العرض
+            handleScreenResize();
+            
             // Add persons to grid
-            snapshot.forEach(doc => {
+            personsSnapshot.forEach(doc => {
                 const person = doc.data();
                 const personId = doc.id;
                 
                 const card = document.createElement('div');
                 card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center person-card';
                 card.setAttribute('data-category', person.section);
+                
+                // تحسين عرض الصور على الأجهزة المحمولة
+                const imageUrl = convertImgBBUrl(person.image) || 'img/default-avatar.png';
+                
                 card.innerHTML = `
-                    <img src="${convertImgBBUrl(person.image)}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full mb-4">
-                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">${person.name}</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-1">${person.job}</p>
-                    <span class="text-sm text-blue-600 dark:text-blue-400">${person.section}</span>
+                    <div class="image-container mb-4">
+                        <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'">
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2 text-center">${person.name}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-1 text-center">${person.job}</p>
+                    <span class="text-sm text-blue-600 dark:text-blue-400 text-center">${person.section}</span>
                 `;
                 
                 personsGrid.appendChild(card);
             });
             
-            console.log('تم إضافة جميع الأشخاص إلى الشبكة بنجاح');
+            // Load registered users from 'people' collection
+            console.log('جاري جلب بيانات المستخدمين المسجلين من Firestore...');
+            const peopleSnapshot = await window.db.collection('people').get();
+            console.log(`تم جلب ${peopleSnapshot.size} مستخدم مسجل من مجموعة people`);
+            
+            // Add registered users to grid
+            peopleSnapshot.forEach(async doc => {
+                const person = doc.data();
+                const personId = doc.id;
+                
+                // Skip if no section (incomplete profile)
+                if (!person.sectionId) return;
+                
+                // Get section name
+                let sectionName = '';
+                try {
+                    const sectionDoc = await db.collection('sections').doc(person.sectionId).get();
+                    if (sectionDoc.exists) {
+                        sectionName = sectionDoc.data().name;
+                    }
+                } catch (error) {
+                    console.error('خطأ في جلب اسم القسم:', error);
+                }
+                
+                const card = document.createElement('div');
+                card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center person-card';
+                card.setAttribute('data-category', sectionName);
+                
+                // تحسين عرض الصور على الأجهزة المحمولة
+                const imageUrl = await getDirectImageUrl(person.imageUrl);
+                
+                card.innerHTML = `
+                    <div class="image-container mb-4">
+                        <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'">
+                    </div>
+                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2 text-center">${person.name}</h3>
+                    <p class="text-gray-600 dark:text-gray-300 mb-1 text-center">${person.job}</p>
+                    <span class="text-sm text-blue-600 dark:text-blue-400 text-center">${sectionName}</span>
+                `;
+                
+                personsGrid.appendChild(card);
+            });
+            
+            console.log('تم إضافة جميع الأشخاص والمستخدمين المسجلين إلى الشبكة بنجاح');
             
             // Also update the persons table in admin dashboard
             try {
                 console.log('جاري تحديث جدول الأشخاص في لوحة التحكم...');
-                updatePersonsTable(snapshot);
+                updatePersonsTable(personsSnapshot);
                 console.log('تم تحديث جدول الأشخاص بنجاح');
             } catch (tableError) {
                 console.error('خطأ في تحديث جدول الأشخاص:', tableError);
@@ -516,14 +942,20 @@ function updatePersonsTable(snapshot) {
         
         const row = document.createElement('tr');
         row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700';
+        
+        // تحسين عرض الصور في جدول الأشخاص
+        const imageUrl = convertImgBBUrl(person.image) || 'img/default-avatar.png';
+        
         row.innerHTML = `
             <td class="px-6 py-4">
-                <img src="${convertImgBBUrl(person.image)}" alt="${person.name}" class="w-10 h-10 object-cover rounded-full">
+                <div class="flex justify-center">
+                    <img src="${imageUrl}" alt="${person.name}" class="w-10 h-10 object-cover rounded-full" onerror="this.src='img/default-avatar.png'">
+                </div>
             </td>
-            <td class="px-6 py-4">${person.name}</td>
-            <td class="px-6 py-4">${person.job}</td>
-            <td class="px-6 py-4">${person.section}</td>
-            <td class="px-6 py-4">
+            <td class="px-6 py-4 text-center">${person.name}</td>
+            <td class="px-6 py-4 text-center">${person.job}</td>
+            <td class="px-6 py-4 text-center">${person.section}</td>
+            <td class="px-6 py-4 text-center">
                 <button class="edit-person-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 ml-2" data-id="${personId}">
                     <i class="fas fa-edit"></i>
                 </button>
