@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>kaar - منصة عرض وإدارة الأشخاص والأقسام</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Header Section -->
+    <header class="bg-white dark:bg-gray-800 shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-white">kaar</h1>
+            </div>
+            <div class="flex items-center space-x-4 space-x-reverse">
+                <!-- Search Bar -->
+                <div class="relative">
+                    <input type="text" id="searchInput" placeholder="ابحث عن شخص..." class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64">
+                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                </div>
+                <!-- Dark Mode Toggle -->
+                <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700">
+                    <i class="fas fa-moon text-gray-600 dark:text-gray-300 dark:hidden"></i>
+                    <i class="fas fa-sun text-yellow-400 hidden dark:block"></i>
+                </button>
+                <!-- Login Button (visible to all) -->
+                <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                    <i class="fas fa-sign-in-alt ml-2"></i>تسجيل الدخول
+                </button>
+                <!-- Admin Dashboard Button (initially hidden, shown after login) -->
+                <button id="dashboardBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300 hidden">
+                    <i class="fas fa-tachometer-alt ml-2"></i>لوحة التحكم
+                </button>
+                <!-- Logout Button (initially hidden, shown after login) -->
+                <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-300 hidden">
+                    <i class="fas fa-sign-out-alt ml-2"></i>تسجيل الخروج
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Navigation -->
+    <nav class="bg-white dark:bg-gray-800 shadow-sm mb-6">
+        <div class="container mx-auto px-4">
+            <ul class="flex space-x-8 space-x-reverse">
+                <li><a href="#" class="block py-4 px-2 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 font-medium">الرئيسية</a></li>
+                <li><a href="#" class="block py-4 px-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition duration-300">الأقسام</a></li>
+                <li><a href="#" class="block py-4 px-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition duration-300">عن المنصة</a></li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Category Filter -->
+    <div class="container mx-auto px-4 mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
+            <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">تصفية حسب القسم</h3>
+            <div id="categoryFilters" class="flex flex-wrap gap-2">
+                <!-- Categories will be loaded dynamically here -->
+                <button class="category-filter active bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-lg transition duration-300" data-category="all">الكل</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 pb-12">
+        <!-- Persons Grid -->
+        <div id="personsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+            <!-- Person cards will be loaded dynamically here -->
+            <!-- Loading Placeholder -->
+            <div class="animate-pulse bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center">
+                <div class="rounded-full bg-gray-300 dark:bg-gray-600 h-32 w-32 mb-4"></div>
+                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
+                <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-2"></div>
+                <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/4"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Login Modal -->
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">تسجيل الدخول</h2>
+                <button id="closeLoginModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="loginForm">
+                <div class="mb-4">
+                    <label for="email" class="block text-gray-700 dark:text-gray-300 mb-2">البريد الإلكتروني</label>
+                    <input type="email" id="email" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
+                <div class="mb-6">
+                    <label for="password" class="block text-gray-700 dark:text-gray-300 mb-2">كلمة المرور</label>
+                    <input type="password" id="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">تسجيل الدخول</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Admin Dashboard (initially hidden) -->
+    <div id="adminDashboard" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-4xl h-5/6 overflow-y-auto">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">لوحة التحكم</h2>
+                <button id="closeAdminDashboard" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <!-- Admin Tabs -->
+            <div class="mb-6 border-b dark:border-gray-700">
+                <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
+                    <li class="ml-2">
+                        <button class="admin-tab active inline-block p-4 border-b-2 border-blue-600 rounded-t-lg" data-tab="persons">إدارة الأشخاص</button>
+                    </li>
+                    <li class="ml-2">
+                        <button class="admin-tab inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="sections">إدارة الأقسام</button>
+                    </li>
+                    <li class="ml-2">
+                        <button class="admin-tab inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="admins">إدارة الحسابات</button>
+                    </li>
+                </ul>
+            </div>
+            
+            <!-- Persons Tab Content -->
+            <div id="personsTab" class="admin-tab-content">
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">إضافة شخص جديد</h3>
+                    <form id="addPersonForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">الاسم</label>
+                            <input type="text" id="personName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">الوظيفة</label>
+                            <input type="text" id="personJob" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">القسم</label>
+                            <select id="personSection" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                                <!-- Sections will be loaded dynamically here -->
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">رابط الصورة</label>
+                            <input type="text" id="directImageUrl" placeholder="https://ibb.co/0jsTLgnm" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">يمكنك إدخال رابط صفحة عرض الصورة من ImgBB مثل https://ibb.co/0jsTLgnm أو رابط مباشر للصورة ينتهي بامتداد الصورة مثل .jpg أو .png. <a href="imgbb_guide.html" target="_blank" class="text-blue-500 hover:underline">شاهد الدليل المصور</a></p>
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">إضافة شخص</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">قائمة الأشخاص</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">الصورة</th>
+                                    <th scope="col" class="px-6 py-3">الاسم</th>
+                                    <th scope="col" class="px-6 py-3">الوظيفة</th>
+                                    <th scope="col" class="px-6 py-3">القسم</th>
+                                    <th scope="col" class="px-6 py-3">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="personsTableBody">
+                                <!-- Persons will be loaded dynamically here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Sections Tab Content -->
+            <div id="sectionsTab" class="admin-tab-content hidden">
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">إضافة قسم جديد</h3>
+                    <form id="addSectionForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">اسم القسم</label>
+                            <input type="text" id="sectionName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">وصف القسم</label>
+                            <input type="text" id="sectionDescription" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">إضافة قسم</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">قائمة الأقسام</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">اسم القسم</th>
+                                    <th scope="col" class="px-6 py-3">الوصف</th>
+                                    <th scope="col" class="px-6 py-3">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="sectionsTableBody">
+                                <!-- Sections will be loaded dynamically here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Admins Tab Content -->
+            <div id="adminsTab" class="admin-tab-content hidden">
+                <div class="mb-6">
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">إضافة مسؤول جديد</h3>
+                    <form id="addAdminForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">البريد الإلكتروني</label>
+                            <input type="email" id="adminEmail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">كلمة المرور</label>
+                            <input type="password" id="adminPassword" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">الدور</label>
+                            <select id="adminRole" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                                <option value="admin">مسؤول</option>
+                                <option value="superadmin">مسؤول رئيسي</option>
+                            </select>
+                        </div>
+                        <div class="md:col-span-2">
+                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">إضافة مسؤول</button>
+                        </div>
+                    </form>
+                </div>
+                
+                <div>
+                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">قائمة المسؤولين</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
+                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                                <tr>
+                                    <th scope="col" class="px-6 py-3">البريد الإلكتروني</th>
+                                    <th scope="col" class="px-6 py-3">الدور</th>
+                                    <th scope="col" class="px-6 py-3">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminsTableBody">
+                                <!-- Admins will be loaded dynamically here -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Person Modal -->
+    <div id="editPersonModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">تعديل شخص</h2>
+                <button id="closeEditPersonModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editPersonForm">
+                <input type="hidden" id="editPersonId">
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">الاسم</label>
+                    <input type="text" id="editPersonName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">الوظيفة</label>
+                    <input type="text" id="editPersonJob" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">القسم</label>
+                    <select id="editPersonSection" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        <!-- Sections will be loaded dynamically here -->
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">الصورة الحالية</label>
+                    <img id="currentPersonImage" src="" alt="صورة الشخص" class="w-32 h-32 object-cover rounded-full mx-auto mb-2">
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">رابط الصورة</label>
+                    <input type="text" id="editPersonDirectImageUrl" placeholder="https://ibb.co/0jsTLgnm" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                    <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">يمكنك إدخال رابط صفحة عرض الصورة من ImgBB مثل https://ibb.co/0jsTLgnm أو رابط مباشر للصورة ينتهي بامتداد الصورة مثل .jpg أو .png. <a href="imgbb_guide.html" target="_blank" class="text-blue-500 hover:underline">شاهد الدليل المصور</a></p>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">حفظ التغييرات</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Section Modal -->
+    <div id="editSectionModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">تعديل قسم</h2>
+                <button id="closeEditSectionModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <form id="editSectionForm">
+                <input type="hidden" id="editSectionId">
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">اسم القسم</label>
+                    <input type="text" id="editSectionName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">وصف القسم</label>
+                    <input type="text" id="editSectionDescription" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                </div>
+                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">حفظ التغييرات</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="confirmationModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-xl font-bold text-gray-800 dark:text-white">تأكيد الحذف</h2>
+                <button id="closeConfirmationModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <p id="confirmationMessage" class="text-gray-700 dark:text-gray-300 mb-6">هل أنت متأكد من أنك تريد حذف هذا العنصر؟</p>
+            <div class="flex justify-end space-x-4 space-x-reverse">
+                <button id="cancelDelete" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300">إلغاء</button>
+                <button id="confirmDelete" class="bg-red-600 hover:bg-red-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">تأكيد الحذف</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-functions-compat.js"></script>
+    
+    <!-- Custom JS -->
+    <script src="js/config.js"></script>
+    <script src="js/admin.js"></script>
+    <script src="js/app.js"></script>
+</body>
+</html>
