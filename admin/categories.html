@@ -84,6 +84,43 @@
         </div>
     </div>
 
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    
+    <script>
+        // تهيئة Firebase
+        const firebaseConfig = { 
+            apiKey: "AIzaSyBeu2_k79cWdO8FteGAqPNnjYDu0QM3JW8", 
+            authDomain: "karkar-36376.firebaseapp.com", 
+            projectId: "karkar-36376", 
+            storageBucket: "karkar-36376.firebasestorage.app", 
+            messagingSenderId: "1068465316432", 
+             appId: "1:1068465316432:web:88782a9008ed013a676755", 
+             measurementId: "G-EJ0PSRF642" 
+        };
+        
+        // تهيئة Firebase
+        firebase.initializeApp(firebaseConfig);
+        
+        // تهيئة Firestore
+        const db = firebase.firestore();
+        db.settings({
+            ignoreUndefinedProperties: true,
+            cacheSizeBytes: firebase.firestore.CACHE_SIZE_UNLIMITED
+        });
+        
+        // التحقق من حالة تسجيل الدخول
+        firebase.auth().onAuthStateChanged(function(user) {
+            if (!user) {
+                // إذا لم يكن المستخدم مسجل الدخول، توجيهه إلى صفحة تسجيل الدخول
+                window.location.href = 'login.html';
+            }
+        });
+    </script>
+    
     <script src="../js/data.js"></script>
     <script src="js/admin.js"></script>
     <script src="js/categories.js"></script>

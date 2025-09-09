@@ -44,8 +44,29 @@ document.addEventListener('DOMContentLoaded', function() {
             // إضافة القسم إلى المصفوفة
             categories.push(newCategory);
             
-            // حفظ البيانات في localStorage
-            localStorage.setItem('categories', JSON.stringify(categories));
+            // حفظ البيانات في Firebase
+            db.collection('categories').doc(formData.categoryId).set(newCategory)
+                .then(() => {
+                    console.log('تم حفظ القسم في Firebase بنجاح');
+                    // حفظ البيانات في localStorage أيضًا للتوافق
+                    localStorage.setItem('categories', JSON.stringify(categories));
+                    
+                    // إضافة القسم إلى الجدول
+                    addCategoryToTable(newCategory);
+                    
+                    // إعادة تعيين النموذج
+                    addCategoryForm.reset();
+                    
+                    // عرض رسالة نجاح
+                    alert('تم إضافة القسم بنجاح');
+                })
+                .catch(error => {
+                    console.error('خطأ في حفظ القسم:', error);
+                    alert('حدث خطأ أثناء حفظ القسم. يرجى المحاولة مرة أخرى.');
+                });
+                
+            // منع التنفيذ المباشر للكود التالي لأنه سيتم تنفيذه في حالة النجاح
+            return;
             
             // إضافة القسم إلى الجدول
             addCategoryToTable(newCategory);
@@ -113,14 +134,25 @@ function editCategory(categoryId) {
     // تحديث بيانات القسم
     category.name = newName;
     
-    // تحديث localStorage
-    localStorage.setItem('categories', JSON.stringify(categories));
-    
-    // إعادة تحميل الجدول
-    loadCategoriesTable();
-    
-    // عرض رسالة نجاح
-    alert('تم تحديث بيانات القسم بنجاح');
+    // تحديث البيانات في Firebase
+    db.collection('categories').doc(categoryId).update({
+        name: newName
+    })
+    .then(() => {
+        console.log('تم تحديث القسم في Firebase بنجاح');
+        // تحديث localStorage للتوافق
+        localStorage.setItem('categories', JSON.stringify(categories));
+        
+        // إعادة تحميل الجدول
+        loadCategoriesTable();
+        
+        // عرض رسالة نجاح
+        alert('تم تحديث بيانات القسم بنجاح');
+    })
+    .catch(error => {
+        console.error('خطأ في تحديث القسم:', error);
+        alert('حدث خطأ أثناء تحديث القسم. يرجى المحاولة مرة أخرى.');
+    });
 }
 
 // دالة لحذف القسم
@@ -133,7 +165,16 @@ function deleteCategory(categoryId) {
         return;
     }
     
-    showConfirmDialog('هل أنت متأكد من حذف هذا القسم؟', function() {
+    // تأكيد الحذف
+    if (!confirm('هل أنت متأكد من حذف هذا القسم؟')) {
+        return;
+    }
+    
+    // حذف القسم من Firebase
+    db.collection('categories').doc(categoryId).delete()
+    .then(() => {
+        console.log('تم حذف القسم من Firebase بنجاح');
+        
         // البحث عن موقع القسم في المصفوفة
         const categoryIndex = categories.findIndex(cat => cat.id === categoryId);
         if (categoryIndex === -1) {
@@ -144,7 +185,7 @@ function deleteCategory(categoryId) {
         // حذف القسم من المصفوفة
         categories.splice(categoryIndex, 1);
         
-        // تحديث localStorage
+        // تحديث localStorage للتوافق
         localStorage.setItem('categories', JSON.stringify(categories));
         
         // إعادة تحميل الجدول
@@ -152,5 +193,9 @@ function deleteCategory(categoryId) {
         
         // عرض رسالة نجاح
         alert('تم حذف القسم بنجاح');
+    })
+    .catch(error => {
+        console.error('خطأ في حذف القسم:', error);
+        alert('حدث خطأ أثناء حذف القسم. يرجى المحاولة مرة أخرى.');
     });
 }

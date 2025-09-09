@@ -22,24 +22,94 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
     
-    // تحميل البيانات من localStorage
-    if (localStorage.getItem('profiles')) {
-        profiles = JSON.parse(localStorage.getItem('profiles'));
-    }
+    // تحميل البيانات من Firebase
+    // تحميل الأقسام
+    db.collection('categories').get()
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                const categoriesData = [];
+                snapshot.forEach(doc => {
+                    categoriesData.push(doc.data());
+                });
+                categories = categoriesData;
+                localStorage.setItem('categories', JSON.stringify(categories));
+                console.log('تم تحميل الأقسام من Firebase بنجاح');
+                
+                // تحديث واجهة المستخدم إذا كانت صفحة الأقسام مفتوحة
+                if (document.getElementById('categoriesTable')) {
+                    loadCategoriesTable();
+                }
+            } else {
+                console.log('لا توجد أقسام في Firebase، سيتم استخدام البيانات المحلية');
+                if (localStorage.getItem('categories')) {
+                    categories = JSON.parse(localStorage.getItem('categories'));
+                }
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في تحميل الأقسام من Firebase:', error);
+            // استخدام البيانات المحلية في حالة الخطأ
+            if (localStorage.getItem('categories')) {
+                categories = JSON.parse(localStorage.getItem('categories'));
+            }
+        });
     
-    if (localStorage.getItem('categories')) {
-        categories = JSON.parse(localStorage.getItem('categories'));
-    }
+    // تحميل المستخدمين
+    db.collection('profiles').get()
+        .then(snapshot => {
+            if (!snapshot.empty) {
+                const profilesData = [];
+                snapshot.forEach(doc => {
+                    profilesData.push(doc.data());
+                });
+                profiles = profilesData;
+                localStorage.setItem('profiles', JSON.stringify(profiles));
+                console.log('تم تحميل المستخدمين من Firebase بنجاح');
+                
+                // تحديث واجهة المستخدم إذا كانت صفحة المستخدمين مفتوحة
+                if (document.getElementById('usersTable')) {
+                    loadUsersTable();
+                }
+            } else {
+                console.log('لا يوجد مستخدمين في Firebase، سيتم استخدام البيانات المحلية');
+                if (localStorage.getItem('profiles')) {
+                    profiles = JSON.parse(localStorage.getItem('profiles'));
+                }
+            }
+        })
+        .catch(error => {
+            console.error('خطأ في تحميل المستخدمين من Firebase:', error);
+            // استخدام البيانات المحلية في حالة الخطأ
+            if (localStorage.getItem('profiles')) {
+                profiles = JSON.parse(localStorage.getItem('profiles'));
+            }
+        });
 });
 
 // دالة تسجيل الخروج
 function logout() {
-    // حذف بيانات المستخدم من localStorage
-    localStorage.removeItem('adminLoggedIn');
-    localStorage.removeItem('adminUsername');
-    
-    // توجيه المستخدم إلى صفحة تسجيل الدخول
-    window.location.href = 'login.html';
+    // تسجيل الخروج من Firebase
+    firebase.auth().signOut()
+        .then(() => {
+            console.log('تم تسجيل الخروج بنجاح من Firebase');
+            
+            // حذف بيانات المستخدم من localStorage
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminUsername');
+            
+            // توجيه المستخدم إلى صفحة تسجيل الدخول
+            window.location.href = 'login.html';
+        })
+        .catch((error) => {
+            console.error('خطأ في تسجيل الخروج من Firebase:', error);
+            
+            // حذف بيانات المستخدم من localStorage على أي حال
+            localStorage.removeItem('adminLoggedIn');
+            localStorage.removeItem('adminUsername');
+            
+            // توجيه المستخدم إلى صفحة تسجيل الدخول
+            window.location.href = 'login.html';
+        });
 }
 
 // دالة لإنشاء عنصر في الجدول

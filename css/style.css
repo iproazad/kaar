@@ -1,13 +1,52 @@
 /* ===== متغيرات الألوان ===== */
 :root {
-    --primary-color: #3498db;
-    --secondary-color: #2980b9;
-    --dark-color: #2c3e50;
-    --light-color: #ecf0f1;
-    --success-color: #2ecc71;
-    --warning-color: #f39c12;
-    --danger-color: #e74c3c;
-    --gray-color: #95a5a6;
+    /* الألوان الأساسية - الوضع الفاتح */
+    --primary-color: #2563eb;
+    --secondary-color: #1e40af;
+    --dark-color: #1e293b;
+    --light-color: #f1f5f9;
+    --success-color: #10b981;
+    --warning-color: #f59e0b;
+    --danger-color: #ef4444;
+    --gray-color: #64748b;
+    
+    /* ألوان الخلفية والنص - الوضع الفاتح */
+    --bg-color: #f8fafc;
+    --bg-card: #ffffff;
+    --text-color: #334155;
+    --header-bg: #ffffff;
+    --border-color: rgba(0, 0, 0, 0.1);
+    --shadow-color: rgba(0, 0, 0, 0.05);
+    --hover-color: rgba(0, 0, 0, 0.03);
+    --badge-bg: #e2e8f0;
+    --badge-text: #475569;
+    --available-badge: #dcfce7;
+    --available-text: #16a34a;
+}
+
+/* متغيرات الوضع الداكن */
+[data-theme="dark"] {
+    --primary-color: #3b82f6;
+    --secondary-color: #60a5fa;
+    --dark-color: #0f172a;
+    --light-color: #e2e8f0;
+    --success-color: #34d399;
+    --warning-color: #fbbf24;
+    --danger-color: #f87171;
+    --gray-color: #94a3b8;
+    
+    /* ألوان الخلفية والنص - الوضع الداكن */
+    --bg-color: #0f172a;
+    --bg-card: #1e293b;
+    --text-color: #e2e8f0;
+    --header-bg: #1e293b;
+    --border-color: rgba(255, 255, 255, 0.1);
+    --shadow-color: rgba(0, 0, 0, 0.3);
+    --hover-color: rgba(255, 255, 255, 0.05);
+    --badge-bg: #334155;
+    --badge-text: #cbd5e1;
+    --available-badge: #064e3b;
+    --available-text: #34d399;
 }
 
 /* ===== إعدادات عامة ===== */
@@ -18,10 +57,11 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    font-family: 'Tajawal', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
     line-height: 1.6;
-    background-color: #f8f9fa;
-    color: #333;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 .container {
@@ -42,28 +82,765 @@ ul {
 
 /* ===== الهيدر ===== */
 header {
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: var(--header-bg);
+    box-shadow: 0 2px 10px var(--shadow-color);
     position: sticky;
     top: 0;
     z-index: 100;
+    transition: background-color 0.3s ease, box-shadow 0.3s ease;
+    padding: 12px 0;
 }
 
 header .container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 15px;
+    padding: 0 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.mobile-menu-toggle {
+    display: none;
+    background: none;
+    border: none;
+    color: var(--text-color);
+    font-size: 24px;
+    cursor: pointer;
+    padding: 5px;
+    z-index: 101;
+}
+
+.menu-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 99;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.menu-overlay.active {
+    display: block;
+    opacity: 1;
 }
 
 .logo h1 {
     color: var(--primary-color);
     font-size: 28px;
     font-weight: bold;
+    letter-spacing: -0.5px;
 }
 
 nav ul {
     display: flex;
+    gap: 20px;
+}
+
+nav a {
+    color: var(--text-color);
+    font-weight: 500;
+    padding: 8px 12px;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+nav a:hover, nav a.active {
+    color: var(--primary-color);
+    background-color: var(--hover-color);
+}
+
+.dropdown {
+    position: absolute;
+    background-color: var(--bg-card);
+    border-radius: 8px;
+    box-shadow: 0 5px 15px var(--shadow-color);
+    padding: 10px 0;
+    min-width: 180px;
+    display: none;
+    z-index: 10;
+    margin-top: 5px;
+}
+
+/* ===== الفوتر ===== */
+footer {
+    background-color: var(--header-bg);
+    color: var(--text-color);
+    padding: 50px 0 20px;
+    border-top: 1px solid var(--border-color);
+    margin-top: 60px;
+}
+
+footer .container {
+    display: flex;
+    flex-direction: column;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 30px;
+    margin-bottom: 40px;
+}
+
+.footer-logo h2 {
+    color: var(--primary-color);
+    font-size: 24px;
+    margin-bottom: 10px;
+}
+
+.footer-logo p {
+    color: var(--gray-color);
+    max-width: 300px;
+}
+
+.footer-links h3, .footer-contact h3 {
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: var(--text-color);
+}
+
+.footer-links ul, .footer-contact ul {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.footer-links a {
+    color: var(--text-color);
+    transition: color 0.2s ease;
+}
+
+.footer-links a:hover {
+    color: var(--primary-color);
+}
+
+.footer-contact li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--gray-color);
+}
+
+.footer-contact i {
+    color: var(--primary-color);
+}
+
+.social-links {
+    display: flex;
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.social-links a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background-color: var(--hover-color);
+    color: var(--primary-color);
+    transition: all 0.3s ease;
+}
+
+.social-links a:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-3px);
+}
+
+.footer-bottom {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    color: var(--gray-color);
+    font-size: 14px;
+}
+
+/* ===== تصميم متجاوب ===== */
+@media (max-width: 992px) {
+    .cards-container {
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    }
+    
+    .footer-content {
+        flex-direction: column;
+        gap: 30px;
+    }
+    
+    .footer-logo, .footer-links, .footer-contact {
+        width: 100%;
+    }
+}
+
+@media (max-width: 768px) {
+    .mobile-menu-toggle {
+        display: block;
+        order: 1;
+    }
+    
+    header .container {
+        flex-wrap: wrap;
+        justify-content: space-between;
+    }
+    
+    .logo {
+        margin-bottom: 0;
+        text-align: center;
+        width: auto;
+    }
+    
+    nav {
+        position: fixed;
+        top: 0;
+        right: -100%;
+        width: 80%;
+        max-width: 300px;
+        height: 100vh;
+        background-color: var(--bg-card);
+        box-shadow: -5px 0 15px var(--shadow-color);
+        padding: 80px 20px 20px;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        z-index: 100;
+        overflow-y: auto;
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    
+    nav.active {
+        right: 0;
+        opacity: 1;
+        transform: translateX(0);
+    }
+    
+    nav ul {
+        flex-direction: column;
+        gap: 15px;
+        align-items: flex-start;
+    }
+    
+    nav ul li {
+        width: 100%;
+    }
+    
+    nav a {
+        display: block;
+        width: 100%;
+        padding: 10px 15px;
+    }
+    
+    .dropdown {
+        position: static;
+        box-shadow: none;
+        width: 100%;
+        margin-top: 10px;
+        padding-right: 15px;
+    }
+    
+    .search-container {
+        width: 100%;
+        order: 3;
+        margin-top: 10px;
+        max-width: 100%;
+    }
+    
+    .theme-toggle {
+        order: 2;
+        margin: 5px 0;
+    }
+    
+    .hero h2 {
+        font-size: 2rem;
+    }
+    
+    .hero p {
+        font-size: 1rem;
+    }
+    
+    .section-header h2 {
+        font-size: 1.8rem;
+    }
+    
+    .section-header p {
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        width: 95%;
+        padding: 0 10px;
+    }
+    
+    .cards-container {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .filter-buttons {
+        flex-direction: column;
+        align-items: center;
+    }
+    
+    .filter-btn {
+        width: 100%;
+        max-width: 200px;
+    }
+    
+    .hero {
+        padding: 40px 0;
+    }
+    
+    .hero h2 {
+        font-size: 1.8rem;
+    }
+    
+    .hero-actions {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .hero-actions .btn {
+        width: 100%;
+    }
+    
+    .card-image {
+        height: 180px;
+    }
+    
+    .contact-link {
+        width: 100%;
+        padding: 10px 15px;
+    }
+}
+
+/* ===== البحث وتبديل الوضع ===== */
+.search-container {
+    display: flex;
+    align-items: center;
+    background-color: var(--bg-color);
+    border-radius: 8px;
+    padding: 6px 12px;
+    border: 1px solid var(--border-color);
+    transition: all 0.3s ease;
+}
+
+.search-container:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.search-container input {
+    background: transparent;
+    border: none;
+    outline: none;
+    padding: 8px;
+    width: 200px;
+    color: var(--text-color);
+    font-size: 14px;
+}
+
+.search-container button {
+    background: transparent;
+    border: none;
+    color: var(--gray-color);
+    cursor: pointer;
+    padding: 0 5px;
+}
+
+.theme-toggle button {
+    background-color: var(--bg-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle button:hover {
+    background-color: var(--hover-color);
+    color: var(--primary-color);
+}
+
+nav li:hover .dropdown {
+    display: block;
+}
+
+.dropdown li {
+    padding: 0;
+}
+
+.dropdown a {
+    display: block;
+    padding: 8px 15px;
+    color: var(--text-color);
+    transition: all 0.2s ease;
+}
+
+.dropdown a:hover {
+    background-color: var(--hover-color);
+    color: var(--primary-color);
+}
+
+/* ===== القسم الرئيسي ===== */
+.hero {
+    background-color: var(--primary-color);
+    color: white;
+    padding: 80px 0;
+    text-align: center;
+    margin-bottom: 40px;
+    background-image: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><circle cx="50" cy="50" r="40" fill="rgba(255,255,255,0.05)"/></svg>');
+    opacity: 0.3;
+}
+
+.hero h2 {
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    font-weight: 700;
+}
+
+.hero p {
+    font-size: 1.2rem;
+    max-width: 600px;
+    margin: 0 auto 25px;
+    opacity: 0.9;
+}
+
+.hero-actions {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 30px;
+}
+
+.btn {
+    display: inline-block;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 500;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 16px;
+}
+
+.btn-primary {
+    background-color: white;
+    color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+.btn-primary:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+}
+
+.btn-secondary {
+    background-color: transparent;
+    color: white;
+    border: 2px solid rgba(255, 255, 255, 0.8);
+}
+
+.btn-secondary:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+    transform: translateY(-3px);
+}
+
+/* ===== قسم الملفات الشخصية ===== */
+.profiles {
+    padding: 40px 0 60px;
+}
+
+.section-header {
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.section-header h2 {
+    color: var(--text-color);
+    font-size: 2rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+}
+
+.section-header p {
+    color: var(--gray-color);
+    font-size: 1.1rem;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.filter-container {
+    margin-bottom: 30px;
+}
+
+.filter-buttons {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 30px;
+}
+
+.filter-btn {
+    background-color: var(--badge-bg);
+    color: var(--badge-text);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.filter-btn:hover {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.filter-btn.active {
+    background-color: var(--primary-color);
+    color: white;
+}
+
+.cards-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 25px;
+    margin-top: 20px;
+}
+
+.card {
+    background-color: var(--bg-card);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 8px 20px var(--shadow-color);
+    transition: all 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--border-color);
+    position: relative;
+}
+
+.card:hover {
+    transform: translateY(-7px);
+    box-shadow: 0 15px 30px var(--shadow-color);
+    border-color: var(--primary-color);
+}
+
+.card-image {
+    height: 220px;
+    overflow: hidden;
+    position: relative;
+}
+
+.card-image::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 40%;
+    background: linear-gradient(to top, rgba(0,0,0,0.5), transparent);
+    z-index: 1;
+}
+
+.card-image img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s ease, filter 0.5s ease;
+}
+
+.card:hover .card-image img {
+    transform: scale(1.08);
+    filter: brightness(1.05);
+}
+
+.card-content {
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    position: relative;
+    z-index: 2;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.category {
+    display: inline-block;
+    background-color: var(--badge-bg);
+    color: var(--badge-text);
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-weight: 600;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    letter-spacing: 0.3px;
+}
+
+.availability {
+    display: inline-block;
+    font-size: 12px;
+    padding: 6px 12px;
+    border-radius: 30px;
+    font-weight: 600;
+    box-shadow: 0 2px 5px var(--shadow-color);
+    letter-spacing: 0.3px;
+}
+
+.availability.available {
+    background-color: var(--available-badge);
+    color: var(--available-text);
+    border: 1px solid var(--available-text);
+}
+
+.card-content h3 {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+    font-weight: 700;
+    letter-spacing: 0.3px;
+    position: relative;
+    display: inline-block;
+}
+
+.card-content h3::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    right: 0;
+    width: 40px;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+    transition: width 0.3s ease;
+}
+
+.card:hover .card-content h3::after {
+    width: 100%;
+}
+
+.job-title {
+    color: var(--primary-color);
+    font-size: 15px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    letter-spacing: 0.2px;
+    position: relative;
+    padding-right: 12px;
+}
+
+.job-title::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 4px;
+    height: 14px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+.description {
+    color: var(--gray-color);
+    font-size: 14px;
+    margin-bottom: 18px;
+    line-height: 1.6;
+    max-height: 4.8em;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+}
+
+.card-footer {
+    margin-top: auto;
+    padding-top: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+.contact-link {
+    display: inline-block;
+    background-color: var(--primary-color);
+    color: white;
+    padding: 10px 20px;
+    border-radius: 30px;
+    font-size: 15px;
+    font-weight: 600;
+    text-align: center;
+    transition: all 0.3s ease;
+    margin-top: auto;
+    width: fit-content;
+    box-shadow: 0 4px 10px rgba(37, 99, 235, 0.3);
+    position: relative;
+    overflow: hidden;
+}
+
+.contact-link::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: 0.5s;
+}
+
+.contact-link:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 15px rgba(37, 99, 235, 0.4);
+}
+
+.contact-link:hover::before {
+    left: 100%;
+}
+
+.contact-link:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-2px);
+}
+
+.no-results {
+    text-align: center;
+    padding: 30px;
+    color: var(--gray-color);
+    font-size: 16px;
+    grid-column: 1 / -1;
 }
 
 nav ul li {
@@ -89,13 +866,14 @@ nav ul li a.active {
     position: absolute;
     top: 100%;
     right: 0;
-    background-color: #fff;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+    background-color: var(--bg-card);
+    box-shadow: 0 2px 5px var(--shadow-color);
     width: 200px;
     opacity: 0;
     visibility: hidden;
     transition: all 0.3s ease;
     z-index: 1;
+    border-radius: 8px;
 }
 
 nav ul li:hover .dropdown {
@@ -114,7 +892,7 @@ nav ul li:hover .dropdown {
 }
 
 .dropdown li a:hover {
-    background-color: #f8f9fa;
+    background-color: var(--hover-color);
 }
 
 /* مربع البحث */
@@ -125,10 +903,13 @@ nav ul li:hover .dropdown {
 
 .search-container input {
     padding: 10px 15px;
-    border: 1px solid #ddd;
+    border: 1px solid var(--border-color);
     border-radius: 4px 0 0 4px;
     outline: none;
     width: 250px;
+    background-color: var(--bg-card);
+    color: var(--text-color);
+    transition: all 0.3s ease;
 }
 
 .search-container button {
@@ -143,6 +924,42 @@ nav ul li:hover .dropdown {
 
 .search-container button:hover {
     background-color: var(--secondary-color);
+}
+
+/* زر تبديل الوضع الداكن */
+.theme-toggle {
+    margin-right: 15px;
+}
+
+.theme-toggle button {
+    background-color: transparent;
+    border: none;
+    color: var(--text-color);
+    font-size: 18px;
+    cursor: pointer;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.theme-toggle button:hover {
+    background-color: var(--hover-color);
+}
+
+[data-theme="dark"] .theme-toggle .fa-moon {
+    display: none;
+}
+
+[data-theme="dark"] .theme-toggle .fa-sun {
+    display: inline-block;
+}
+
+.theme-toggle .fa-sun {
+    display: none;
 }
 
 /* ===== القسم الرئيسي ===== */
@@ -174,7 +991,7 @@ nav ul li:hover .dropdown {
 .profiles h2 {
     text-align: center;
     margin-bottom: 40px;
-    color: var(--dark-color);
+    color: var(--text-color);
 }
 
 .filter-buttons {
@@ -185,9 +1002,9 @@ nav ul li:hover .dropdown {
 }
 
 .filter-btn {
-    background-color: #fff;
-    border: 1px solid #ddd;
-    color: var(--dark-color);
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-color);
     padding: 8px 20px;
     margin: 0 5px 10px;
     cursor: pointer;
@@ -209,11 +1026,11 @@ nav ul li:hover .dropdown {
 }
 
 .card {
-    background-color: #fff;
+    background-color: var(--bg-card);
     border-radius: 8px;
     overflow: hidden;
-    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
-    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    box-shadow: 0 3px 10px var(--shadow-color);
+    transition: transform 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
 }
 
 .card:hover {
