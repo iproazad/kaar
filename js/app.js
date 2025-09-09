@@ -65,7 +65,7 @@ function isValidImageUrl(url) {
 // دالة لتحويل رابط صفحة عرض الصورة من ImgBB إلى رابط مباشر للصورة
 function convertImgBBUrl(url) {
     // إذا كان الرابط فارغًا أو غير محدد، نعيد رابط الصورة الافتراضية
-    if (!url) {
+    if (!url || url.trim() === '') {
         return 'img/default-avatar.png';
     }
     
@@ -83,12 +83,26 @@ function convertImgBBUrl(url) {
         return `https://i.ibb.co/${imageId}/image.jpg`;
     }
     
+    // التحقق من أن الرابط يبدأ بـ http:// أو https://
+    if (!url.toLowerCase().startsWith('http://') && !url.toLowerCase().startsWith('https://')) {
+        return 'img/default-avatar.png';
+    }
+    
     // إذا لم يكن الرابط من ImgBB، نعيده كما هو
     return url;
 }
 
 // Main application initialization
 function initApp() {
+    // إضافة meta viewport tag للتأكد من عرض التطبيق بشكل صحيح على الأجهزة المحمولة
+    const viewportMeta = document.querySelector('meta[name="viewport"]');
+    if (!viewportMeta) {
+        const newViewportMeta = document.createElement('meta');
+        newViewportMeta.name = 'viewport';
+        newViewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
+        document.head.appendChild(newViewportMeta);
+    }
+    
     // Check authentication state
     checkAuthState();
     
@@ -431,17 +445,27 @@ async function handleRegister(e) {
 // Helper function to get direct image URL from ImgBB share URL
 async function getDirectImageUrl(shareUrl) {
     // إذا كان الرابط فارغًا أو غير محدد، نعيد رابط الصورة الافتراضية
-    if (!shareUrl) {
+    if (!shareUrl || shareUrl.trim() === '') {
+        return 'img/default-avatar.png';
+    }
+    
+    // التحقق من أن الرابط يبدأ بـ http:// أو https://
+    if (!shareUrl.toLowerCase().startsWith('http://') && !shareUrl.toLowerCase().startsWith('https://')) {
         return 'img/default-avatar.png';
     }
     
     // If it's already a direct URL, return it
-    if (shareUrl.match(/\.(jpg|jpeg|png|gif|webp)$/i)) {
+    if (shareUrl.match(/\.(jpg|jpeg|png|gif|webp|svg)$/i)) {
         return shareUrl;
     }
     
     // إذا كان الرابط من ImgBB، نحاول تحويله إلى رابط مباشر
     if (shareUrl.includes('ibb.co/')) {
+        // تحقق إذا كان الرابط مباشراً بالفعل
+        if (shareUrl.includes('i.ibb.co')) {
+            return shareUrl;
+        }
+        
         // نستخرج معرف الصورة من الرابط
         const imageId = shareUrl.split('/').pop();
         // نعيد رابط مباشر للصورة باستخدام معرف الصورة
@@ -842,7 +866,7 @@ async function loadPersons() {
                 
                 card.innerHTML = `
                     <div class="image-container mb-4">
-                        <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'">
+                        <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'; this.onerror=null;">
                     </div>
                     <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2 text-center">${person.name}</h3>
                     <p class="text-gray-600 dark:text-gray-300 mb-1 text-center">${person.job}</p>
@@ -885,7 +909,7 @@ async function loadPersons() {
                 
                 card.innerHTML = `
                     <div class="image-container mb-4">
-                        <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'">
+                        <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'; this.onerror=null;">
                     </div>
                     <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2 text-center">${person.name}</h3>
                     <p class="text-gray-600 dark:text-gray-300 mb-1 text-center">${person.job}</p>

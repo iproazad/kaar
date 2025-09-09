@@ -79,10 +79,40 @@ body {
     border-radius: 50%;
     display: block;
     margin: 0 auto;
+    width: 128px;
+    height: 128px;
+    max-width: 100%;
 }
 
 .person-card:hover img {
     transform: scale(1.05);
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+    .person-card img {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .person-card img {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .person-card {
+        padding: 0.75rem;
+    }
+    
+    .person-card h3 {
+        font-size: 1rem;
+    }
+    
+    .person-card p, .person-card span {
+        font-size: 0.875rem;
+    }
 }
 
 /* Image container for better mobile display */
@@ -92,6 +122,12 @@ body {
     justify-content: center;
     align-items: center;
     margin-bottom: 1rem;
+    min-height: 80px;
+}
+
+/* Fix for image loading issues on mobile */
+.image-container img {
+    background-color: rgba(59, 130, 246, 0.1);
 }
 
 /* Button Styles */
