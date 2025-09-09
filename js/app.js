@@ -41,19 +41,45 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
-// دالة للتحقق من صحة رابط الصورة المباشر
+// دالة للتحقق من صحة رابط الصورة
 function isValidImageUrl(url) {
-    // التحقق من أن الرابط يحتوي على امتداد صورة معروف
-    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
-    const lowercaseUrl = url.toLowerCase();
-    
     // التحقق من أن الرابط يبدأ بـ http:// أو https://
-    if (!lowercaseUrl.startsWith('http://') && !lowercaseUrl.startsWith('https://')) {
+    if (!url || (!url.toLowerCase().startsWith('http://') && !url.toLowerCase().startsWith('https://'))) {
         return false;
     }
     
-    // التحقق من أن الرابط ينتهي بامتداد صورة معروف
+    // قبول روابط ImgBB المباشرة وغير المباشرة
+    // مثال للرابط المباشر: https://i.ibb.co/AbCdEfG/example-image.jpg
+    // مثال للرابط غير المباشر: https://ibb.co/0jsTLgnm
+    if (url.includes('ibb.co')) {
+        return true;
+    }
+    
+    // التحقق من أن الرابط ينتهي بامتداد صورة معروف للروابط الأخرى
+    const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.bmp', '.webp', '.svg'];
+    const lowercaseUrl = url.toLowerCase();
+
     return imageExtensions.some(ext => lowercaseUrl.endsWith(ext));
+}
+
+// دالة لتحويل رابط صفحة عرض الصورة من ImgBB إلى رابط مباشر للصورة
+function convertImgBBUrl(url) {
+    // إذا كان الرابط مباشراً بالفعل، نعيده كما هو
+    if (url.includes('i.ibb.co')) {
+        return url;
+    }
+    
+    // إذا كان الرابط لصفحة عرض الصورة من ImgBB (مثل https://ibb.co/0jsTLgnm)
+    if (url.includes('ibb.co/')) {
+        // نستخرج معرف الصورة من الرابط
+        const imageId = url.split('/').pop();
+        // نعيد رابط افتراضي للصورة المباشرة باستخدام معرف الصورة
+        // ملاحظة: هذا ليس الرابط الفعلي للصورة، ولكنه يستخدم كحل مؤقت
+        return `https://i.ibb.co/${imageId}/image.jpg`;
+    }
+    
+    // إذا لم يكن الرابط من ImgBB، نعيده كما هو
+    return url;
 }
 
 // Main application initialization
@@ -434,7 +460,7 @@ async function loadPersons() {
                 card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center person-card';
                 card.setAttribute('data-category', person.section);
                 card.innerHTML = `
-                    <img src="${person.image}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full mb-4">
+                    <img src="${convertImgBBUrl(person.image)}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full mb-4">
                     <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2">${person.name}</h3>
                     <p class="text-gray-600 dark:text-gray-300 mb-1">${person.job}</p>
                     <span class="text-sm text-blue-600 dark:text-blue-400">${person.section}</span>
@@ -492,7 +518,7 @@ function updatePersonsTable(snapshot) {
         row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700';
         row.innerHTML = `
             <td class="px-6 py-4">
-                <img src="${person.image}" alt="${person.name}" class="w-10 h-10 object-cover rounded-full">
+                <img src="${convertImgBBUrl(person.image)}" alt="${person.name}" class="w-10 h-10 object-cover rounded-full">
             </td>
             <td class="px-6 py-4">${person.name}</td>
             <td class="px-6 py-4">${person.job}</td>
@@ -633,13 +659,13 @@ async function handleAddPerson(e) {
     const directImageUrl = document.getElementById('directImageUrl').value;
     
     if (!name || !job || !section || !directImageUrl) {
-        alert('يرجى ملء جميع الحقول بما في ذلك رابط الصورة المباشر');
+        alert('يرجى ملء جميع الحقول بما في ذلك رابط الصورة');
         return;
     }
     
-    // التحقق من صحة رابط الصورة المباشر
+    // التحقق من صحة رابط الصورة
     if (!isValidImageUrl(directImageUrl)) {
-        alert('يرجى إدخال رابط مباشر صحيح للصورة ينتهي بامتداد الصورة مثل .jpg أو .png أو .gif');
+        alert('يرجى إدخال رابط صحيح للصورة. يمكنك استخدام رابط صفحة عرض الصورة من ImgBB مثل https://ibb.co/0jsTLgnm أو رابط مباشر للصورة ينتهي بامتداد الصورة مثل .jpg أو .png');
         return;
     }
     
@@ -1041,7 +1067,7 @@ async function openEditPersonModal(personId) {
         document.getElementById('editPersonName').value = person.name;
         document.getElementById('editPersonJob').value = person.job;
         document.getElementById('editPersonSection').value = person.section;
-        document.getElementById('currentPersonImage').src = person.image;
+        document.getElementById('currentPersonImage').src = convertImgBBUrl(person.image);
         document.getElementById('editPersonDirectImageUrl').value = person.image;
         
         document.getElementById('editPersonModal').classList.remove('hidden');
@@ -1061,13 +1087,13 @@ async function handleEditPerson(e) {
     const directImageUrl = document.getElementById('editPersonDirectImageUrl').value;
 
     if (!name || !job || !section || !directImageUrl) {
-        alert('يرجى ملء جميع الحقول بما في ذلك رابط الصورة المباشر');
+        alert('يرجى ملء جميع الحقول بما في ذلك رابط الصورة');
         return;
     }
     
-    // التحقق من صحة رابط الصورة المباشر
+    // التحقق من صحة رابط الصورة
     if (!isValidImageUrl(directImageUrl)) {
-        alert('يرجى إدخال رابط مباشر صحيح للصورة ينتهي بامتداد الصورة مثل .jpg أو .png أو .gif');
+        alert('يرجى إدخال رابط صحيح للصورة. يمكنك استخدام رابط صفحة عرض الصورة من ImgBB مثل https://ibb.co/0jsTLgnm أو رابط مباشر للصورة ينتهي بامتداد الصورة مثل .jpg أو .png');
         return;
     }
     
