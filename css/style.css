@@ -1,0 +1,207 @@
+/* Main Styles for Kaar Application */
+
+/* Import Arabic font - Tajawal */
+@import url('https://fonts.googleapis.com/css2?family=Tajawal:wght@300;400;500;700;800&display=swap');
+
+/* Base Styles */
+:root {
+    --primary-color: #3b82f6;
+    --primary-dark: #2563eb;
+    --secondary-color: #10b981;
+    --secondary-dark: #059669;
+    --light-bg: #f9fafb;
+    --dark-bg: #111827;
+    --light-card: #ffffff;
+    --dark-card: #1f2937;
+    --light-text: #1f2937;
+    --dark-text: #f9fafb;
+    --border-light: #e5e7eb;
+    --border-dark: #374151;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: 'Tajawal', sans-serif;
+    line-height: 1.6;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+/* Dark Mode Styles */
+.dark body {
+    color: var(--dark-text);
+    background-color: var(--dark-bg);
+}
+
+/* Card Styles */
+.person-card {
+    transition: transform 0.3s, box-shadow 0.3s;
+    height: 100%;
+}
+
+.person-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+/* Image Styles */
+.person-card img {
+    border: 4px solid var(--primary-color);
+    transition: transform 0.3s;
+}
+
+.person-card:hover img {
+    transform: scale(1.05);
+}
+
+/* Button Styles */
+button {
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:focus {
+    outline: none;
+}
+
+/* Form Styles */
+input, select, textarea {
+    transition: border-color 0.3s, box-shadow 0.3s;
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
+}
+
+/* Modal Animations */
+.modal {
+    transition: opacity 0.3s, visibility 0.3s;
+}
+
+/* Responsive Grid Adjustments */
+@media (max-width: 640px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .person-card {
+        padding: 1rem;
+    }
+    
+    .person-card img {
+        width: 5rem;
+        height: 5rem;
+    }
+}
+
+/* Animation for loading */
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.5;
+    }
+}
+
+.animate-pulse {
+    animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--light-bg);
+}
+
+.dark ::-webkit-scrollbar-track {
+    background: var(--dark-bg);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-dark);
+}
+
+/* RTL specific adjustments */
+[dir="rtl"] .ml-2 {
+    margin-left: 0.5rem;
+    margin-right: 0;
+}
+
+[dir="rtl"] .mr-2 {
+    margin-right: 0.5rem;
+    margin-left: 0;
+}
+
+/* Admin dashboard tabs */
+.admin-tab {
+    position: relative;
+    cursor: pointer;
+}
+
+.admin-tab.active {
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Category filter buttons */
+.category-filter {
+    transition: all 0.3s ease;
+}
+
+.category-filter.active {
+    font-weight: 500;
+}
+
+/* Loading animation */
+.loading-spinner {
+    border: 4px solid rgba(0, 0, 0, 0.1);
+    border-radius: 50%;
+    border-top: 4px solid var(--primary-color);
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 20px auto;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.dark .loading-spinner {
+    border-color: rgba(255, 255, 255, 0.1);
+    border-top-color: var(--primary-color);
+}
+
+/* Masonry layout for cards */
+@media (min-width: 768px) {
+    .masonry-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        grid-auto-rows: 10px;
+        grid-gap: 1.5rem;
+    }
+    
+    .masonry-item {
+        grid-row-end: span var(--card-height, 30);
+    }
+}
