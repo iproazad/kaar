@@ -146,13 +146,11 @@ function applyCardStyles() {
         }
     });
     
-    // تطبيق الأنماط في الوضع الداكن
-    if (document.documentElement.classList.contains('dark')) {
-        cards.forEach(card => {
-            card.style.backgroundColor = 'var(--dark-card)';
-            card.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.2)';
-        });
-    }
+    // تطبيق الأنماط في الوضع الداكن دائمًا
+    cards.forEach(card => {
+        card.style.backgroundColor = 'var(--dark-card)';
+        card.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.2)';
+    });
 }
 
 // Main application initialization
@@ -216,11 +214,13 @@ function checkAuthState() {
         const logoutBtn = document.getElementById('logoutBtn');
         const dashboardBtn = document.getElementById('dashboardBtn');
         
-        // التأكد من إخفاء أزرار لوحة التحكم وتسجيل الخروج للزائر
+        // التأكد من إخفاء جميع الأزرار ما عدا تسجيل الدخول والتسجيل للزائر
          if (!user) {
              console.log('المستخدم غير مسجل الدخول (زائر)');
+             // إظهار فقط أزرار تسجيل الدخول والتسجيل
              loginBtn.classList.remove('hidden');
              registerBtn.classList.remove('hidden');
+             // إخفاء جميع الأزرار الأخرى
              logoutBtn.classList.add('hidden');
              dashboardBtn.classList.add('hidden');
              
@@ -374,8 +374,9 @@ function setupEventListeners() {
     // تنفيذ استجابة الشاشة عند بدء التطبيق
     handleScreenResize();
     
-    // Dark mode toggle
+    // Dark mode toggle - مخفي لأن الوضع الداكن مفعل بشكل دائم
     const darkModeToggle = document.getElementById('darkModeToggle');
+    darkModeToggle.classList.add('hidden');
     darkModeToggle.addEventListener('click', toggleDarkMode);
     
     // Login modal
@@ -2852,13 +2853,9 @@ async function openDeleteAdminConfirmation(adminId) {
 
 // Setup dark mode
 function setupDarkMode() {
-    // Check for saved theme preference or use the system preference
-    if (localStorage.getItem('darkMode') === 'true' || 
-        (!localStorage.getItem('darkMode') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-        document.documentElement.classList.add('dark');
-    } else {
-        document.documentElement.classList.remove('dark');
-    }
+    // تطبيق الوضع الداكن بشكل افتراضي دائمًا
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('darkMode', 'true');
     
     // تطبيق الأنماط على البطاقات بعد تحديد وضع السمة
     setTimeout(() => {
