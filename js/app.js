@@ -1917,6 +1917,77 @@ async function openDeletePersonConfirmation(personId) {
     });
 }
 
+import React, { useEffect, useState } from "react";
+import { auth } from "./auth";       // ملف auth.js عندك فيه Firebase Auth
+import { getUserRole } from "./auth"; // الدالة اللي شرحناها
+
+function App() {
+  const [user, setUser] = useState(null);
+  const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // مراقبة تسجيل الدخول
+    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
+      if (currentUser) {
+        setUser(currentUser);
+        const roleResult = await getUserRole(); // استدعاء الدالة
+        setRole(roleResult);
+      } else {
+        setUser(null);
+        setRole(null);
+      }
+      setLoading(false);
+    });
+
+    return () => unsubscribe();
+  }, []);
+
+  if (loading) {
+    return <p>جارٍ التحميل...</p>;
+  }
+
+  if (!user) {
+    return <p>يرجى تسجيل الدخول</p>;
+  }
+
+  // تخصيص الواجهات حسب الدور
+  if (role === "superadmin") {
+    return (
+      <div>
+        <h1>مرحباً SuperAdmin 🚀</h1>
+        <p>لديك صلاحيات كاملة على التطبيق</p>
+        {/* ضع هنا مكونات الـ dashboard الكاملة */}
+      </div>
+    );
+  }
+
+  if (role === "admin") {
+    return (
+      <div>
+        <h1>مرحباً Admin 👮‍♂️</h1>
+        <p>يمكنك إدارة الأشخاص (persons)</p>
+        {/* ضع هنا المكونات الخاصة بالمشرف */}
+      </div>
+    );
+  }
+
+  if (role === "user") {
+    return (
+      <div>
+        <h1>مرحباً مستخدم 👤</h1>
+        <p>يمكنك تعديل بياناتك فقط</p>
+        {/* ضع هنا واجهة صاحب الأعمال (people) */}
+      </div>
+    );
+  }
+
+  return <p>ليس لديك صلاحيات كافية للوصول إلى البيانات.</p>;
+}
+
+export default App;
+
+
 // Open delete section confirmation
 async function openDeleteSectionConfirmation(sectionId) {
     console.log('Opening delete section confirmation for section ID:', sectionId);
