@@ -95,6 +95,64 @@ function convertImgBBUrl(url) {
     return url;
 }
 
+// دالة لتطبيق الأنماط على البطاقات بشكل متسق
+function applyCardStyles() {
+    // تحديد جميع البطاقات
+    const cards = document.querySelectorAll('.person-card');
+    
+    // تطبيق الأنماط على كل بطاقة
+    cards.forEach(card => {
+        // التأكد من وجود خصائص التحويل والظل
+        card.style.transition = 'transform 0.3s, box-shadow 0.3s';
+        card.style.backgroundColor = 'var(--light-card)';
+        card.style.borderRadius = '12px';
+        card.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.05)';
+        
+        // تطبيق الأنماط على الصورة
+        const img = card.querySelector('img');
+        if (img) {
+            img.style.border = '4px solid var(--primary-color)';
+            img.style.transition = 'transform 0.3s';
+        }
+        
+        // إضافة مستمع حدث للتحويل عند تمرير المؤشر
+        if (!card.hasListener) {
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-5px)';
+                this.style.boxShadow = '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)';
+                
+                // تأثير على الصورة عند التحويم
+                const img = this.querySelector('img');
+                if (img) {
+                    img.style.transform = 'scale(1.05)';
+                }
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+                this.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.05)';
+                
+                // إعادة الصورة إلى حجمها الطبيعي
+                const img = this.querySelector('img');
+                if (img) {
+                    img.style.transform = 'scale(1)';
+                }
+            });
+            
+            // وضع علامة على البطاقة بأنه تم إضافة المستمع
+            card.hasListener = true;
+        }
+    });
+    
+    // تطبيق الأنماط في الوضع الداكن
+    if (document.documentElement.classList.contains('dark')) {
+        cards.forEach(card => {
+            card.style.backgroundColor = 'var(--dark-card)';
+            card.style.boxShadow = '0 4px 10px rgba(0, 0, 0, 0.2)';
+        });
+    }
+}
+
 // Main application initialization
 function initApp() {
     console.log('بدء تهيئة التطبيق...');
@@ -132,7 +190,7 @@ function handleScreenResize() {
     const personsGrid = document.getElementById('personsGrid');
     if (personsGrid) {
         if (window.innerWidth <= 480) {
-            personsGrid.className = 'grid grid-cols-2 gap-2';
+            personsGrid.className = 'grid grid-cols-2 gap-3';
         } else if (window.innerWidth <= 640) {
             personsGrid.className = 'grid grid-cols-2 gap-4';
         } else if (window.innerWidth <= 768) {
@@ -141,6 +199,9 @@ function handleScreenResize() {
             personsGrid.className = 'grid grid-cols-4 gap-6';
         }
     }
+    
+    // التأكد من تطبيق الأنماط بشكل صحيح على جميع الأجهزة
+    applyCardStyles();
 }
 
 // Check if user is authenticated
@@ -1145,6 +1206,9 @@ async function loadPersons() {
                 
                 personsGrid.appendChild(card);
             });
+            
+            // تطبيق الأنماط على البطاقات بعد إضافتها
+            applyCardStyles();
             
             // Load registered users from 'people' collection
             console.log('جاري جلب بيانات المستخدمين المسجلين من Firestore...');
@@ -2459,6 +2523,11 @@ function setupDarkMode() {
     } else {
         document.documentElement.classList.remove('dark');
     }
+    
+    // تطبيق الأنماط على البطاقات بعد تحديد وضع السمة
+    setTimeout(() => {
+        applyCardStyles();
+    }, 100); // تأخير قصير لضمان تحميل البطاقات
 }
 
 // Toggle dark mode
@@ -2470,4 +2539,7 @@ function toggleDarkMode() {
         document.documentElement.classList.add('dark');
         localStorage.setItem('darkMode', 'true');
     }
+    
+    // تطبيق الأنماط على البطاقات بعد تغيير الوضع
+    applyCardStyles();
 }

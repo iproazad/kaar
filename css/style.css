@@ -41,7 +41,7 @@ body {
     background-color: var(--dark-bg);
 }
 
-/* Card Styles */
+/* Card Styles - Unified Elegant Design */
 .person-card {
     transition: transform 0.3s, box-shadow 0.3s;
     height: 100%;
@@ -49,6 +49,15 @@ body {
     flex-direction: column;
     align-items: center;
     text-align: center;
+    background-color: var(--light-card);
+    border-radius: 12px;
+    padding: 1.25rem;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+}
+
+.dark .person-card {
+    background-color: var(--dark-card);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
 }
 
 .person-card:hover {
@@ -88,11 +97,31 @@ body {
     transform: scale(1.05);
 }
 
-/* Media Queries for Responsive Design */
+/* Media Queries for Responsive Design - Unified Style */
 @media (max-width: 768px) {
     .person-card img {
         width: 100px;
         height: 100px;
+        border: 3px solid var(--primary-color);
+    }
+    
+    .person-card {
+        background-color: var(--light-card);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        padding: 1rem;
+        margin-bottom: 1rem;
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .dark .person-card {
+        background-color: var(--dark-card);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .person-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
 }
 
@@ -104,6 +133,20 @@ body {
     
     .person-card {
         padding: 0.75rem;
+        background-color: var(--light-card);
+        border-radius: 12px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        transition: transform 0.3s, box-shadow 0.3s;
+    }
+    
+    .dark .person-card {
+        background-color: var(--dark-card);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    }
+    
+    .person-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
     }
     
     .person-card h3 {
