@@ -47,10 +47,17 @@ async function checkAdminStatus() {
       console.log('بيانات المسؤول:', adminData);
       console.log('دور المسؤول:', adminData.role || 'غير محدد');
       
-      // إذا كان المستخدم superadmin أو admin، فهو مسؤول
-      const isAdmin = adminData.role === 'admin' || adminData.role === 'superadmin';
-      console.log('نتيجة التحقق من الصلاحيات:', isAdmin ? 'مسؤول' : 'غير مسؤول');
-      return isAdmin;
+      // التحقق من دور المستخدم بشكل أكثر تفصيلاً
+      if (adminData.role === 'superadmin') {
+        console.log('المستخدم هو سوبر أدمين (له كامل الصلاحيات بدون قيود)');
+        return true;
+      } else if (adminData.role === 'admin') {
+        console.log('المستخدم هو مسؤول عادي');
+        return true;
+      } else {
+        console.log('المستخدم ليس لديه دور مسؤول صالح');
+        return false;
+      }
       
     } catch (adminError) {
       console.error('خطأ في الوصول إلى مجموعة المسؤولين:', adminError);

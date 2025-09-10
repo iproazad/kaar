@@ -25,8 +25,10 @@ async function checkAdminStatus() {
         console.log('دور المستخدم:', adminData.role || 'غير محدد');
         
         // إذا كان المستخدم superadmin أو admin، فهو مسؤول
+        const isAdmin = adminData.role === 'admin' || adminData.role === 'superadmin';
+        console.log('نتيجة التحقق من الصلاحيات:', isAdmin ? 'مسؤول' : 'غير مسؤول');
         console.log('تم التحقق بنجاح: المستخدم هو مسؤول');
-        return true;
+        return isAdmin;
     } catch (error) {
         console.error('خطأ في التحقق من صلاحيات المستخدم:', error);
         console.error('رمز الخطأ:', error.code);
@@ -214,88 +216,133 @@ function checkAuthState() {
         const logoutBtn = document.getElementById('logoutBtn');
         const dashboardBtn = document.getElementById('dashboardBtn');
         
-        if (user) {
-            console.log('User is signed in:', user.email, 'UID:', user.uid);
-            loginBtn.classList.add('hidden');
-            registerBtn.classList.add('hidden');
-            logoutBtn.classList.remove('hidden');
+        // التأكد من إخفاء أزرار لوحة التحكم وتسجيل الخروج للزائر
+         if (!user) {
+             console.log('المستخدم غير مسجل الدخول (زائر)');
+             loginBtn.classList.remove('hidden');
+             registerBtn.classList.remove('hidden');
+             logoutBtn.classList.add('hidden');
+             dashboardBtn.classList.add('hidden');
+             
+             // تعيين حالة المستخدم كزائر
+             window.isVisitor = true;
+             
+             // إضافة شريط تنبيه للزائر في أعلى الصفحة إذا لم يكن موجودًا
+             if (!document.getElementById('visitorBanner')) {
+                 const header = document.querySelector('header');
+                 const visitorBanner = document.createElement('div');
+                 visitorBanner.id = 'visitorBanner';
+                 visitorBanner.className = 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 py-2 text-center';
+                 visitorBanner.innerHTML = `
+                     <div class="container mx-auto px-4">
+                         <i class="fas fa-info-circle ml-2"></i>
+                         أنت تتصفح كزائر. <a href="#" id="loginBannerBtn" class="text-blue-600 dark:text-blue-400 underline font-bold">سجل الدخول</a> للوصول إلى جميع الميزات.
+                     </div>
+                 `;
+                 document.body.insertBefore(visitorBanner, header);
+                 
+                 // إضافة حدث النقر على زر تسجيل الدخول في الشريط
+                 document.getElementById('loginBannerBtn').addEventListener('click', (e) => {
+                     e.preventDefault();
+                     document.getElementById('loginModal').classList.remove('hidden');
+                 });
+             }
+             
+             // إخفاء زر الملف الشخصي إذا كان موجودًا
+             const userProfileBtn = document.getElementById('userProfileBtn');
+             if (userProfileBtn) {
+                 userProfileBtn.classList.add('hidden');
+             }
+             
+             // تحميل البيانات للزائر
+             console.log('تحميل البيانات للزائر...');
+             loadSections();
+             loadPersons();
+             return;
+         }
+        
+        // إذا وصلنا إلى هنا، فالمستخدم مسجل الدخول
+        console.log('User is signed in:', user.email, 'UID:', user.uid);
+        loginBtn.classList.add('hidden');
+        registerBtn.classList.add('hidden');
+        logoutBtn.classList.remove('hidden');
+        
+        // تعيين حالة المستخدم كمستخدم مسجل
+        window.isVisitor = false;
+        
+        // إزالة شريط تنبيه الزائر إذا كان موجودًا
+        const visitorBanner = document.getElementById('visitorBanner');
+        if (visitorBanner) {
+            visitorBanner.remove();
+        }
+        
+        // Add user profile button
+        let userProfileBtn = document.getElementById('userProfileBtn');
+        if (!userProfileBtn) {
+            userProfileBtn = document.createElement('button');
+            userProfileBtn.id = 'userProfileBtn';
+            userProfileBtn.className = 'bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition duration-300 ml-2';
+            userProfileBtn.innerHTML = '<i class="fas fa-user ml-2"></i>الملف الشخصي';
+            userProfileBtn.addEventListener('click', () => {
+                loadUserProfile(user.uid);
+                document.getElementById('userProfileModal').classList.remove('hidden');
+            });
             
-            // تعيين حالة المستخدم كمستخدم مسجل
-            window.isVisitor = false;
+            // Insert before logout button
+            logoutBtn.parentNode.insertBefore(userProfileBtn, logoutBtn);
+        } else {
+            userProfileBtn.classList.remove('hidden');
+        }
+        
+        // Check user role - first check in admins collection
+        try {
+            console.log('التحقق من صلاحيات المستخدم في مجموعة المسؤولين...');
+            const adminDoc = await db.collection('admins').doc(user.uid).get();
             
-            // إزالة شريط تنبيه الزائر إذا كان موجودًا
-            const visitorBanner = document.getElementById('visitorBanner');
-            if (visitorBanner) {
-                visitorBanner.remove();
-            }
-            
-            // Add user profile button
-            let userProfileBtn = document.getElementById('userProfileBtn');
-            if (!userProfileBtn) {
-                userProfileBtn = document.createElement('button');
-                userProfileBtn.id = 'userProfileBtn';
-                userProfileBtn.className = 'bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition duration-300 ml-2';
-                userProfileBtn.innerHTML = '<i class="fas fa-user ml-2"></i>الملف الشخصي';
-                userProfileBtn.addEventListener('click', () => {
-                    loadUserProfile(user.uid);
-                    document.getElementById('userProfileModal').classList.remove('hidden');
-                });
+            if (adminDoc.exists) {
+                const adminData = adminDoc.data();
+                console.log('بيانات المسؤول:', adminData);
+                console.log('دور المستخدم في مجموعة المسؤولين:', adminData.role || 'غير محدد');
                 
-                // Insert before logout button
-                logoutBtn.parentNode.insertBefore(userProfileBtn, logoutBtn);
-            } else {
-                userProfileBtn.classList.remove('hidden');
-            }
-            
-            // Check user role - first check in admins collection
-            try {
-                console.log('التحقق من صلاحيات المستخدم في مجموعة المسؤولين...');
-                const adminDoc = await db.collection('admins').doc(user.uid).get();
-                
-                if (adminDoc.exists) {
-                    const adminData = adminDoc.data();
-                    console.log('بيانات المسؤول:', adminData);
-                    console.log('دور المستخدم في مجموعة المسؤولين:', adminData.role || 'غير محدد');
+                if (adminData.role === 'admin' || adminData.role === 'superadmin') {
+                    // Admin user - show dashboard button
+                    dashboardBtn.classList.remove('hidden');
+                    console.log('تم تفعيل زر لوحة التحكم للمسؤول');
+                    // Load admin data
+                    loadAdmins();
                     
-                    if (adminData.role === 'admin' || adminData.role === 'superadmin') {
-                        // Admin user - show dashboard button
-                        dashboardBtn.classList.remove('hidden');
-                        console.log('تم تفعيل زر لوحة التحكم للمسؤول');
-                        // Load admin data
-                        loadAdmins();
-                        
-                        // إعادة تحميل البيانات بعد التحقق من الصلاحيات
-                        console.log('إعادة تحميل البيانات للمسؤول...');
-                        await loadSections();
-                        await loadPersons();
-                        return; // نخرج من الدالة بعد التعامل مع المسؤول
-                    }
+                    // إعادة تحميل البيانات بعد التحقق من الصلاحيات
+                    console.log('إعادة تحميل البيانات للمسؤول...');
+                    await loadSections();
+                    await loadPersons();
+                    return; // نخرج من الدالة بعد التعامل مع المسؤول
                 }
+            }
+            
+            // إذا لم يكن المستخدم في مجموعة المسؤولين، نتحقق من مجموعة المستخدمين
+            console.log('التحقق من صلاحيات المستخدم في مجموعة المستخدمين العاديين...');
+            const userDoc = await db.collection('users').doc(user.uid).get();
+            
+            if (userDoc.exists) {
+                const userData = userDoc.data();
+                console.log('بيانات المستخدم:', userData);
+                console.log('دور المستخدم في مجموعة المستخدمين:', userData.role || 'غير محدد');
                 
-                // إذا لم يكن المستخدم في مجموعة المسؤولين، نتحقق من مجموعة المستخدمين
-                console.log('التحقق من صلاحيات المستخدم في مجموعة المستخدمين العاديين...');
-                const userDoc = await db.collection('users').doc(user.uid).get();
-                
-                if (userDoc.exists) {
-                    const userData = userDoc.data();
-                    console.log('بيانات المستخدم:', userData);
-                    console.log('دور المستخدم في مجموعة المستخدمين:', userData.role || 'غير محدد');
-                    
-                    if (userData.role === 'admin') {
-                        // Admin user - show dashboard button
-                        dashboardBtn.classList.remove('hidden');
-                        console.log('تم تفعيل زر لوحة التحكم للمستخدم المسؤول');
-                        // Load admin data
-                        loadAdmins();
-                    } else {
-                        // Regular user - hide dashboard button
-                        dashboardBtn.classList.add('hidden');
-                        console.log('تم إخفاء زر لوحة التحكم للمستخدم العادي');
-                    }
+                if (userData.role === 'admin') {
+                    // Admin user - show dashboard button
+                    dashboardBtn.classList.remove('hidden');
+                    console.log('تم تفعيل زر لوحة التحكم للمستخدم المسؤول');
+                    // Load admin data
+                    loadAdmins();
                 } else {
-                    console.log('المستخدم غير موجود في مجموعة المستخدمين العاديين');
+                    // Regular user - hide dashboard button
                     dashboardBtn.classList.add('hidden');
+                    console.log('تم إخفاء زر لوحة التحكم للمستخدم العادي');
                 }
+            } else {
+                console.log('المستخدم غير موجود في مجموعة المستخدمين العاديين');
+                dashboardBtn.classList.add('hidden');
+            }
                 
                 // إعادة تحميل البيانات للمستخدم العادي
                 console.log('إعادة تحميل البيانات للمستخدم العادي...');
@@ -315,52 +362,7 @@ function checkAuthState() {
                     console.error('خطأ في تحميل البيانات بعد فشل التحقق من الصلاحيات:', loadError);
                 }
             }
-        } else {
-            console.log('No user is signed in');
-            loginBtn.classList.remove('hidden');
-            registerBtn.classList.remove('hidden');
-            logoutBtn.classList.add('hidden');
-            dashboardBtn.classList.add('hidden');
-            
-            // تعيين حالة المستخدم كزائر
-            window.isVisitor = true;
-            
-            // إضافة شريط تنبيه للزائر في أعلى الصفحة إذا لم يكن موجودًا
-            if (!document.getElementById('visitorBanner')) {
-                const header = document.querySelector('header');
-                const visitorBanner = document.createElement('div');
-                visitorBanner.id = 'visitorBanner';
-                visitorBanner.className = 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 py-2 text-center';
-                visitorBanner.innerHTML = `
-                    <div class="container mx-auto px-4">
-                        <i class="fas fa-info-circle ml-2"></i>
-                        أنت تتصفح كزائر. <a href="#" id="loginBannerBtn" class="text-blue-600 dark:text-blue-400 underline font-bold">سجل الدخول</a> للوصول إلى جميع الميزات.
-                    </div>
-                `;
-                document.body.insertBefore(visitorBanner, header);
-                
-                // إضافة حدث النقر على زر تسجيل الدخول في الشريط
-                document.getElementById('loginBannerBtn').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    document.getElementById('loginModal').classList.remove('hidden');
-                });
-            }
-            
-            // Hide user profile button if exists
-            const userProfileBtn = document.getElementById('userProfileBtn');
-            if (userProfileBtn) {
-                userProfileBtn.classList.add('hidden');
-            }
-            
-            // محاولة تحميل البيانات العامة حتى للمستخدمين غير المسجلين
-            try {
-                console.log('تحميل البيانات للمستخدم غير المسجل...');
-                loadSections();
-                loadPersons();
-            } catch (error) {
-                console.error('خطأ في تحميل البيانات للمستخدم غير المسجل:', error);
-            }
-        }
+
     });
 }
 
@@ -1047,6 +1049,7 @@ async function loadPersons() {
         // تحديد المجموعة التي سيتم تحميلها بناءً على دور المستخدم
         let collectionToLoad;
         let queryConstraints = [];
+        let loadBothCollections = false; // متغير للتحكم في تحميل كلا المجموعتين
         
         if (userRole === 'superadmin') {
             // المطور يمكنه الوصول إلى جميع المجموعات
@@ -1056,6 +1059,8 @@ async function loadPersons() {
             collectionToLoad = 'persons';
         } else if (userRole === 'user') {
             // صاحب الأعمال يمكنه الوصول إلى بياناته الخاصة في مجموعة people
+            // وأيضًا يمكنه رؤية بياناته في مجموعة persons (إذا كانت موجودة)
+            loadBothCollections = true; // تفعيل تحميل كلا المجموعتين
             collectionToLoad = 'people';
             if (userPeopleId) {
                 queryConstraints.push(['id', '==', userPeopleId]);
@@ -1089,6 +1094,9 @@ async function loadPersons() {
             // Load persons based on user role and collection
             console.log(`جاري جلب بيانات الأشخاص من مجموعة ${collectionToLoad}...`);
             let personsSnapshot;
+            // تعريف peopleSnapshot كمتغير عام لتجنب التعارض مع التعريفات الأخرى
+            window.peopleSnapshot = null; // متغير لتخزين بيانات مجموعة people
+            
             try {
                 let query = window.db.collection(collectionToLoad);
                 
@@ -1108,6 +1116,15 @@ async function loadPersons() {
                 
                 personsSnapshot = await query.get();
                 console.log(`تم جلب ${personsSnapshot.size} شخص من مجموعة ${collectionToLoad}`);
+                
+                // إذا كان المستخدم صاحب أعمال وتم تفعيل خيار تحميل كلا المجموعتين
+                if (loadBothCollections && userRole === 'user' && userId) {
+                    console.log('جاري جلب بيانات الأشخاص من مجموعة persons لصاحب الأعمال...');
+                    // البحث عن بيانات المستخدم في مجموعة persons
+                    const personsQuery = window.db.collection('persons').where('userId', '==', userId);
+                    window.peopleSnapshot = await personsQuery.get();
+                    console.log(`تم جلب ${window.peopleSnapshot.size} شخص من مجموعة persons لصاحب الأعمال`);
+                }
             } catch (personsError) {
                 console.error(`خطأ في جلب بيانات الأشخاص من مجموعة ${collectionToLoad}:`, personsError);
                 console.log('رمز الخطأ:', personsError.code);
@@ -1212,10 +1229,22 @@ async function loadPersons() {
             
             // Load registered users from 'people' collection
             console.log('جاري جلب بيانات المستخدمين المسجلين من Firestore...');
-            let peopleSnapshot;
+            // تهيئة peopleSnapshot بقيم افتراضية لتجنب الأخطاء
+            if (!window.peopleSnapshot) {
+                window.peopleSnapshot = { 
+                    empty: true, 
+                    forEach: (callback) => {}, 
+                    size: 0,
+                    docs: []
+                };
+            }
             try {
-                peopleSnapshot = await window.db.collection('people').get();
-                console.log(`تم جلب ${peopleSnapshot.size} مستخدم مسجل من مجموعة people`);
+                if (window.db && typeof window.db.collection === 'function') {
+                    window.peopleSnapshot = await window.db.collection('people').get();
+                    console.log(`تم جلب ${window.peopleSnapshot.size} مستخدم مسجل من مجموعة people`);
+                } else {
+                    console.error('خطأ: window.db غير معرف أو غير مهيأ بشكل صحيح');
+                }
             } catch (peopleError) {
                 console.error('خطأ في جلب بيانات المستخدمين المسجلين:', peopleError);
                 console.log('رمز الخطأ:', peopleError.code);
@@ -1237,13 +1266,18 @@ async function loadPersons() {
                 }
                 
                 // إذا كان هناك خطأ آخر، نستمر بمجموعة فارغة
-                peopleSnapshot = { empty: true, forEach: () => {}, size: 0 };
+                window.peopleSnapshot = { 
+                    empty: true, 
+                    forEach: (callback) => {}, 
+                    size: 0,
+                    docs: [] 
+                };
             }
             
             // Add registered users to grid
             const sectionPromises = [];
             
-            peopleSnapshot.forEach(doc => {
+            window.peopleSnapshot.forEach(doc => {
                 const person = doc.data();
                 const personId = doc.id;
                 
@@ -1300,7 +1334,17 @@ async function loadPersons() {
             // Also update the persons table in admin dashboard
             try {
                 console.log('جاري تحديث جدول الأشخاص في لوحة التحكم...');
-                updatePersonsTable(personsSnapshot);
+                
+                // إذا كان لدينا بيانات من مجموعة people أيضًا، نقوم بدمجها مع بيانات persons
+                if (window.peopleSnapshot && !window.peopleSnapshot.empty) {
+                    console.log('دمج بيانات من مجموعتي persons و people في جدول الأشخاص...');
+                    // نقوم بتحديث الجدول بكلا المجموعتين
+                    updatePersonsTable(personsSnapshot, window.peopleSnapshot);
+                } else {
+                    // تحديث الجدول بمجموعة واحدة فقط
+                    updatePersonsTable(personsSnapshot);
+                }
+                
                 console.log('تم تحديث جدول الأشخاص بنجاح');
             } catch (tableError) {
                 console.error('خطأ في تحديث جدول الأشخاص:', tableError);
@@ -1335,7 +1379,7 @@ async function loadPersons() {
 }
 
 // Update persons table in admin dashboard
-function updatePersonsTable(snapshot) {
+function updatePersonsTable(snapshot, secondSnapshot = null) {
     const personsTableBody = document.getElementById('personsTableBody');
     if (!personsTableBody) {
         console.log('لم يتم العثور على عنصر personsTableBody، قد تكون في صفحة غير صفحة الإدارة');
@@ -1344,9 +1388,11 @@ function updatePersonsTable(snapshot) {
     personsTableBody.innerHTML = '';
     console.log('جاري تحديث جدول الأشخاص...');
     
+    // إضافة بيانات من المجموعة الأولى (persons أو people)
     snapshot.forEach(doc => {
         const person = doc.data();
         const personId = doc.id;
+        const collectionName = doc.ref.parent.id; // اسم المجموعة التي ينتمي إليها المستند
         
         const row = document.createElement('tr');
         row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700';
@@ -1364,10 +1410,10 @@ function updatePersonsTable(snapshot) {
             <td class="px-6 py-4 text-center">${person.job}</td>
             <td class="px-6 py-4 text-center">${person.section}</td>
             <td class="px-6 py-4 text-center">
-                <button class="edit-person-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 ml-2" data-id="${personId}">
+                <button class="edit-person-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 ml-2" data-id="${personId}" data-collection="${collectionName}">
                     <i class="fas fa-edit"></i>
                 </button>
-                <button class="delete-person-btn text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" data-id="${personId}">
+                <button class="delete-person-btn text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" data-id="${personId}" data-collection="${collectionName}">
                     <i class="fas fa-trash"></i>
                 </button>
             </td>
@@ -1376,6 +1422,42 @@ function updatePersonsTable(snapshot) {
         personsTableBody.appendChild(row);
     });
     
+    // إذا كانت هناك مجموعة ثانية (people)، نضيف بياناتها أيضًا
+    if (secondSnapshot && !secondSnapshot.empty) {
+        secondSnapshot.forEach(doc => {
+            const person = doc.data();
+            const personId = doc.id;
+            const collectionName = doc.ref.parent.id; // اسم المجموعة التي ينتمي إليها المستند
+            
+            const row = document.createElement('tr');
+            row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700';
+            
+            // تحسين عرض الصور في جدول الأشخاص
+            const imageUrl = convertImgBBUrl(person.image) || 'img/default-avatar.png';
+            
+            row.innerHTML = `
+                <td class="px-6 py-4">
+                    <div class="flex justify-center">
+                        <img src="${imageUrl}" alt="${person.name}" class="w-10 h-10 object-cover rounded-full" onerror="this.src='img/default-avatar.png'">
+                    </div>
+                </td>
+                <td class="px-6 py-4 text-center">${person.name}</td>
+                <td class="px-6 py-4 text-center">${person.job}</td>
+                <td class="px-6 py-4 text-center">${person.section}</td>
+                <td class="px-6 py-4 text-center">
+                    <button class="edit-person-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 ml-2" data-id="${personId}" data-collection="${collectionName}">
+                        <i class="fas fa-edit"></i>
+                    </button>
+                    <button class="delete-person-btn text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" data-id="${personId}" data-collection="${collectionName}">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                </td>
+            `;
+            
+            personsTableBody.appendChild(row);
+        });
+    }
+    
     console.log(`تم تحديث جدول الأشخاص بنجاح مع ${snapshot.size} شخص`);
     
     // Add event listeners to edit and delete buttons
@@ -1383,7 +1465,8 @@ function updatePersonsTable(snapshot) {
     editButtons.forEach(button => {
         button.addEventListener('click', () => {
             const personId = button.getAttribute('data-id');
-            openEditPersonModal(personId);
+            const collectionName = button.getAttribute('data-collection') || 'persons';
+            openEditPersonModal(personId, collectionName);
         });
     });
     
@@ -1391,7 +1474,8 @@ function updatePersonsTable(snapshot) {
     deleteButtons.forEach(button => {
         button.addEventListener('click', () => {
             const personId = button.getAttribute('data-id');
-            openDeletePersonConfirmation(personId);
+            const collectionName = button.getAttribute('data-collection') || 'persons';
+            openDeletePersonConfirmation(personId, collectionName);
         });
     });
 }
@@ -1534,8 +1618,18 @@ async function handleAddPerson(e) {
                 console.log('هل المستخدم موجود في مجموعة المسؤولين:', adminDoc.exists);
                 
                 if (adminDoc.exists) {
-                    // منح جميع المسؤولين صلاحيات كاملة بغض النظر عن الدور
-                    console.log('المستخدم هو مسؤول، السماح بإضافة شخص');
+                    const adminData = adminDoc.data();
+                    console.log('بيانات المسؤول:', adminData);
+                    console.log('دور المستخدم:', adminData.role || 'غير محدد');
+                    
+                    // التحقق من دور المستخدم (superadmin أو admin)
+                    if (adminData.role === 'superadmin' || adminData.role === 'admin') {
+                        console.log('المستخدم هو مسؤول، السماح بإضافة شخص');
+                    } else {
+                        console.error('المستخدم ليس مسؤولاً، رفض إضافة شخص');
+                        alert('ليس لديك صلاحيات كافية لإضافة شخص جديد. يرجى تسجيل الدخول مرة أخرى.');
+                        return;
+                    }
                 } else {
                     console.error('المستخدم ليس مسؤولاً، رفض إضافة شخص');
                     alert('ليس لديك صلاحيات كافية لإضافة شخص جديد. يجب أن تكون مسؤولاً.');
@@ -1685,24 +1779,42 @@ async function handleAddSection(e) {
         }
         
         // التحقق من صلاحيات المستخدم كمسؤول
-  const isAdmin = await checkAdminStatus();
-  if (!isAdmin) {
-    // التحقق من دور المستخدم
-    const user = firebase.auth().currentUser;
-    if (user) {
-      const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
-      if (adminDoc.exists) {
-        // منح جميع المسؤولين صلاحيات كاملة بغض النظر عن الدور
-        console.log('المستخدم هو مسؤول، السماح بإضافة قسم');
-      } else {
-        alert('ليس لديك صلاحيات كافية لإضافة قسم جديد. يجب أن تكون مسؤولاً.');
-        return;
-      }
-    } else {
-      alert('ليس لديك صلاحيات كافية لإضافة قسم جديد. يجب أن تكون مسؤولاً.');
-      return;
-    }
-  }
+        console.log('جاري التحقق من صلاحيات المستخدم...');
+        const user = firebase.auth().currentUser;
+        
+        if (!user) {
+            console.error('المستخدم غير مسجل الدخول، رفض إضافة قسم');
+            alert('ليس لديك صلاحيات كافية لإضافة قسم جديد. يرجى تسجيل الدخول.');
+            return;
+        }
+        
+        console.log('المستخدم الحالي:', user.email);
+        
+        // التحقق مباشرة من وجود المستخدم في مجموعة المسؤولين
+        const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
+        console.log('هل المستخدم موجود في مجموعة المسؤولين:', adminDoc.exists);
+        
+        if (!adminDoc.exists) {
+            console.error('المستخدم ليس مسؤولاً، رفض إضافة قسم');
+            alert('ليس لديك صلاحيات كافية لإضافة قسم جديد. يجب أن تكون مسؤولاً.');
+            return;
+        }
+        
+        const adminData = adminDoc.data();
+        console.log('بيانات المسؤول:', adminData);
+        console.log('دور المستخدم:', adminData.role || 'غير محدد');
+        
+        // التحقق من دور المستخدم (superadmin له كامل الصلاحيات بدون قيود)
+        if (adminData.role === 'superadmin') {
+            console.log('المستخدم هو سوبر أدمين، السماح بإضافة قسم بدون قيود');
+        } else if (adminData.role === 'admin') {
+            console.log('المستخدم هو مسؤول عادي، السماح بإضافة قسم');
+        } else {
+            console.error('المستخدم ليس لديه دور مسؤول صالح، رفض إضافة قسم');
+            alert('ليس لديك صلاحيات كافية لإضافة قسم جديد. يرجى تسجيل الدخول مرة أخرى.');
+            return;
+        }
+
         
         console.log('Adding section:', name, description);
         
@@ -1898,12 +2010,65 @@ async function handleAddAdmin(e) {
 }
 
 // Open edit person modal
-async function openEditPersonModal(personId) {
+async function openEditPersonModal(personId, collectionName = 'persons') {
     try {
-        const doc = await db.collection('persons').doc(personId).get();
+        // التحقق من صلاحيات المستخدم كمسؤول
+        console.log('جاري التحقق من صلاحيات المستخدم...');
+        const isAdmin = await checkAdminStatus();
+        console.log('نتيجة التحقق من حالة المسؤول:', isAdmin);
+        
+        if (!isAdmin) {
+            // التحقق من دور المستخدم
+            console.log('المستخدم ليس مسؤولاً حسب checkAdminStatus، جاري التحقق مرة أخرى...');
+            const user = firebase.auth().currentUser;
+            console.log('المستخدم الحالي:', user ? user.email : 'غير مسجل الدخول');
+            
+            if (user) {
+                console.log('جاري التحقق من وجود المستخدم في مجموعة المسؤولين...');
+                const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
+                console.log('هل المستخدم موجود في مجموعة المسؤولين:', adminDoc.exists);
+                
+                if (adminDoc.exists) {
+                    const adminData = adminDoc.data();
+                    console.log('بيانات المسؤول:', adminData);
+                    console.log('دور المستخدم:', adminData.role || 'غير محدد');
+                    
+                    // التحقق من دور المستخدم (superadmin أو admin)
+                    if (adminData.role === 'superadmin') {
+                        console.log('المستخدم هو سوبر أدمين، السماح بفتح نافذة تعديل الشخص بدون قيود');
+                    } else if (adminData.role === 'admin') {
+                        console.log('المستخدم هو مسؤول عادي، السماح بفتح نافذة تعديل الشخص');
+                    } else {
+                        console.error('المستخدم ليس مسؤولاً، رفض فتح نافذة تعديل الشخص');
+                        alert('ليس لديك صلاحيات كافية لتعديل الشخص. يرجى تسجيل الدخول مرة أخرى.');
+                        return;
+                    }
+                } else {
+                    console.error('المستخدم ليس مسؤولاً، رفض فتح نافذة تعديل الشخص');
+                    alert('ليس لديك صلاحيات كافية لتعديل الشخص. يجب أن تكون مسؤولاً.');
+                    return;
+                }
+            } else {
+                console.error('المستخدم غير مسجل الدخول، رفض فتح نافذة تعديل الشخص');
+                alert('ليس لديك صلاحيات كافية لتعديل الشخص. يجب أن تكون مسؤولاً.');
+                return;
+            }
+        }
+        
+        console.log(`جاري فتح نافذة تعديل الشخص من المجموعة: ${collectionName}`);
+        const doc = await db.collection(collectionName).doc(personId).get();
+        
+        if (!doc.exists) {
+            console.error(`لم يتم العثور على الشخص بالمعرف ${personId} في المجموعة ${collectionName}`);
+            alert('لم يتم العثور على بيانات الشخص');
+            return;
+        }
+        
         const person = doc.data();
         
         document.getElementById('editPersonId').value = personId;
+        // إضافة معلومات المجموعة للاستخدام عند الحفظ
+        document.getElementById('editPersonId').setAttribute('data-collection', collectionName);
         document.getElementById('editPersonName').value = person.name;
         document.getElementById('editPersonJob').value = person.job;
         document.getElementById('editPersonSection').value = person.section;
@@ -1920,7 +2085,13 @@ async function openEditPersonModal(personId) {
 async function handleEditPerson(e) {
     e.preventDefault();
     
-    const personId = document.getElementById('editPersonId').value;
+    const personIdElement = document.getElementById('editPersonId');
+    const personId = personIdElement.value;
+    // الحصول على اسم المجموعة من السمة المخصصة
+    const collectionName = personIdElement.getAttribute('data-collection') || 'persons';
+    
+    console.log(`جاري تعديل الشخص بالمعرف ${personId} من المجموعة ${collectionName}`);
+    
     const name = document.getElementById('editPersonName').value;
     const job = document.getElementById('editPersonJob').value;
     const section = document.getElementById('editPersonSection').value;
@@ -1937,6 +2108,60 @@ async function handleEditPerson(e) {
         return;
     }
     
+    // التحقق من صلاحيات المستخدم كمسؤول
+    console.log('جاري التحقق من صلاحيات المستخدم...');
+    const isAdmin = await checkAdminStatus();
+    console.log('نتيجة التحقق من حالة المسؤول:', isAdmin);
+    
+    if (!isAdmin) {
+        // التحقق من دور المستخدم
+        console.log('المستخدم ليس مسؤولاً حسب checkAdminStatus، جاري التحقق مرة أخرى...');
+        const user = firebase.auth().currentUser;
+        console.log('المستخدم الحالي:', user ? user.email : 'غير مسجل الدخول');
+        
+        if (user) {
+            console.log('جاري التحقق من وجود المستخدم في مجموعة المسؤولين...');
+            try {
+                if (!firebase.firestore) {
+                    console.error('خطأ: firebase.firestore غير متاح');
+                    alert('حدث خطأ في الاتصال بقاعدة البيانات. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+                    return;
+                }
+                const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
+                console.log('هل المستخدم موجود في مجموعة المسؤولين:', adminDoc.exists);
+                
+                if (adminDoc.exists) {
+                const adminData = adminDoc.data();
+                console.log('بيانات المسؤول:', adminData);
+                console.log('دور المستخدم:', adminData.role || 'غير محدد');
+                
+                // التحقق من دور المستخدم (superadmin أو admin)
+                if (adminData.role === 'superadmin') {
+                    console.log('المستخدم هو سوبر أدمين، السماح بتعديل الشخص بدون قيود');
+                } else if (adminData.role === 'admin') {
+                    console.log('المستخدم هو مسؤول عادي، السماح بتعديل الشخص');
+                } else {
+                    console.error('المستخدم ليس مسؤولاً، رفض تعديل الشخص');
+                    alert('ليس لديك صلاحيات كافية لتعديل الشخص. يرجى تسجيل الدخول مرة أخرى.');
+                    return;
+                }
+                } else {
+                    console.error('المستخدم ليس مسؤولاً، رفض تعديل الشخص');
+                    alert('ليس لديك صلاحيات كافية لتعديل الشخص. يجب أن تكون مسؤولاً.');
+                    return;
+                }
+            } catch (error) {
+                console.error('حدث خطأ أثناء التحقق من صلاحيات المستخدم:', error);
+                alert('حدث خطأ أثناء التحقق من صلاحياتك. يرجى تحديث الصفحة والمحاولة مرة أخرى.');
+                return;
+            }
+        } else {
+            console.error('المستخدم غير مسجل الدخول، رفض تعديل الشخص');
+            alert('ليس لديك صلاحيات كافية لتعديل الشخص. يجب أن تكون مسؤولاً.');
+            return;
+        }
+    }
+    
     try {
         // Check if window.db and window.storage are initialized
         if (!window.db || !window.storage) {
@@ -1946,7 +2171,7 @@ async function handleEditPerson(e) {
         }
         
         // Check if person with same name already exists in the same section (excluding current person)
-        const existingPerson = await window.db.collection('persons')
+        const existingPerson = await window.db.collection(collectionName)
             .where('name', '==', name)
             .where('section', '==', section)
             .get();
@@ -1975,11 +2200,11 @@ async function handleEditPerson(e) {
         console.log('تحديث بيانات الشخص باستخدام رابط الصورة المباشر:', directImageUrl);
         
         try {
-            // Update person in Firestore
-            await db.collection('persons').doc(personId).update(updateData);
+            // Update person in Firestore using the correct collection
+            await db.collection(collectionName).doc(personId).update(updateData);
             
             // Verify the update by reading back the document
-            const docRef = await db.collection('persons').doc(personId).get();
+            const docRef = await db.collection(collectionName).doc(personId).get();
             
             if (!docRef.exists) {
                 throw new Error('فشل التحقق من حفظ البيانات المحدثة');
@@ -2035,10 +2260,46 @@ async function openEditSectionModal(sectionId) {
         }
         
         // التحقق من صلاحيات المستخدم كمسؤول
+        console.log('جاري التحقق من صلاحيات المستخدم...');
         const isAdmin = await checkAdminStatus();
+        console.log('نتيجة التحقق من حالة المسؤول:', isAdmin);
+        
         if (!isAdmin) {
-            alert('ليس لديك صلاحيات كافية لتعديل القسم. يجب أن تكون مسؤولاً.');
-            return;
+            // التحقق من دور المستخدم
+            console.log('المستخدم ليس مسؤولاً حسب checkAdminStatus، جاري التحقق مرة أخرى...');
+            const user = firebase.auth().currentUser;
+            console.log('المستخدم الحالي:', user ? user.email : 'غير مسجل الدخول');
+            
+            if (user) {
+                console.log('جاري التحقق من وجود المستخدم في مجموعة المسؤولين...');
+                const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
+                console.log('هل المستخدم موجود في مجموعة المسؤولين:', adminDoc.exists);
+                
+                if (adminDoc.exists) {
+                    const adminData = adminDoc.data();
+                    console.log('بيانات المسؤول:', adminData);
+                    console.log('دور المستخدم:', adminData.role || 'غير محدد');
+                    
+                    // التحقق من دور المستخدم (superadmin أو admin)
+                    if (adminData.role === 'superadmin') {
+                        console.log('المستخدم هو سوبر أدمين، السماح بتعديل القسم بدون قيود');
+                    } else if (adminData.role === 'admin') {
+                        console.log('المستخدم هو مسؤول عادي، السماح بتعديل القسم');
+                    } else {
+                        console.error('المستخدم ليس مسؤولاً، رفض تعديل القسم');
+                        alert('ليس لديك صلاحيات كافية لتعديل القسم. يرجى تسجيل الدخول مرة أخرى.');
+                        return;
+                    }
+                } else {
+                    console.error('المستخدم ليس مسؤولاً، رفض تعديل القسم');
+                    alert('ليس لديك صلاحيات كافية لتعديل القسم. يجب أن تكون مسؤولاً.');
+                    return;
+                }
+            } else {
+                console.error('المستخدم غير مسجل الدخول، رفض تعديل القسم');
+                alert('ليس لديك صلاحيات كافية لتعديل القسم. يرجى تسجيل الدخول.');
+                return;
+            }
         }
         
         console.log('Fetching section data from Firestore...');
@@ -2090,10 +2351,44 @@ async function handleEditSection(e) {
         }
         
         // التحقق من صلاحيات المستخدم كمسؤول
+        console.log('جاري التحقق من صلاحيات المستخدم...');
         const isAdmin = await checkAdminStatus();
+        console.log('نتيجة التحقق من حالة المسؤول:', isAdmin);
+        
         if (!isAdmin) {
-            alert('ليس لديك صلاحيات كافية لتعديل القسم. يجب أن تكون مسؤولاً.');
-            return;
+            // التحقق من دور المستخدم
+            console.log('المستخدم ليس مسؤولاً حسب checkAdminStatus، جاري التحقق مرة أخرى...');
+            const user = firebase.auth().currentUser;
+            console.log('المستخدم الحالي:', user ? user.email : 'غير مسجل الدخول');
+            
+            if (user) {
+                console.log('جاري التحقق من وجود المستخدم في مجموعة المسؤولين...');
+                const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
+                console.log('هل المستخدم موجود في مجموعة المسؤولين:', adminDoc.exists);
+                
+                if (adminDoc.exists) {
+                    const adminData = adminDoc.data();
+                    console.log('بيانات المسؤول:', adminData);
+                    console.log('دور المستخدم:', adminData.role || 'غير محدد');
+                    
+                    // التحقق من دور المستخدم (superadmin أو admin)
+                    if (adminData.role === 'superadmin' || adminData.role === 'admin') {
+                        console.log('المستخدم هو مسؤول، السماح بتعديل القسم');
+                    } else {
+                        console.error('المستخدم ليس مسؤولاً، رفض تعديل القسم');
+                        alert('ليس لديك صلاحيات كافية لتعديل القسم. يرجى تسجيل الدخول مرة أخرى.');
+                        return;
+                    }
+                } else {
+                    console.error('المستخدم ليس مسؤولاً، رفض تعديل القسم');
+                    alert('ليس لديك صلاحيات كافية لتعديل القسم. يجب أن تكون مسؤولاً.');
+                    return;
+                }
+            } else {
+                console.error('المستخدم غير مسجل الدخول، رفض تعديل القسم');
+                alert('ليس لديك صلاحيات كافية لتعديل القسم. يرجى تسجيل الدخول.');
+                return;
+            }
         }
         
         // Check if section with same name already exists (excluding current section)
@@ -2172,30 +2467,55 @@ async function handleEditSection(e) {
 }
 
 // Open delete person confirmation
-async function openDeletePersonConfirmation(personId) {
+async function openDeletePersonConfirmation(personId, collectionName = 'persons') {
     const confirmationModal = document.getElementById('confirmationModal');
     const confirmationMessage = document.getElementById('confirmationMessage');
     const confirmDelete = document.getElementById('confirmDelete');
     
     // التحقق من صلاحيات المستخدم كمسؤول
+    console.log('جاري التحقق من صلاحيات المستخدم...');
     const isAdmin = await checkAdminStatus();
+    console.log('نتيجة التحقق من حالة المسؤول:', isAdmin);
+    
     if (!isAdmin) {
         // التحقق من دور المستخدم
+        console.log('المستخدم ليس مسؤولاً حسب checkAdminStatus، جاري التحقق مرة أخرى...');
         const user = firebase.auth().currentUser;
+        console.log('المستخدم الحالي:', user ? user.email : 'غير مسجل الدخول');
+        
         if (user) {
+            console.log('جاري التحقق من وجود المستخدم في مجموعة المسؤولين...');
             const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
+            console.log('هل المستخدم موجود في مجموعة المسؤولين:', adminDoc.exists);
+            
             if (adminDoc.exists) {
-                // منح جميع المسؤولين صلاحيات كاملة بغض النظر عن الدور
-                console.log('المستخدم هو مسؤول، السماح بحذف الشخص');
+                const adminData = adminDoc.data();
+                console.log('بيانات المسؤول:', adminData);
+                console.log('دور المستخدم:', adminData.role || 'غير محدد');
+                
+                // التحقق من دور المستخدم (superadmin أو admin)
+                if (adminData.role === 'superadmin') {
+                    console.log('المستخدم هو سوبر أدمين، السماح بحذف الشخص بدون قيود');
+                } else if (adminData.role === 'admin') {
+                    console.log('المستخدم هو مسؤول عادي، السماح بحذف الشخص');
+                } else {
+                    console.error('المستخدم ليس مسؤولاً، رفض حذف الشخص');
+                    alert('ليس لديك صلاحيات كافية لحذف الشخص. يرجى تسجيل الدخول مرة أخرى.');
+                    return;
+                }
             } else {
+                console.error('المستخدم ليس مسؤولاً، رفض حذف الشخص');
                 alert('ليس لديك صلاحيات كافية لحذف الشخص. يجب أن تكون مسؤولاً.');
                 return;
             }
         } else {
+            console.error('المستخدم غير مسجل الدخول، رفض حذف الشخص');
             alert('ليس لديك صلاحيات كافية لحذف الشخص. يجب أن تكون مسؤولاً.');
             return;
         }
     }
+    
+    console.log(`جاري فتح نافذة حذف الشخص من المجموعة: ${collectionName}`);
     
     confirmationMessage.textContent = 'هل أنت متأكد من أنك تريد حذف هذا الشخص؟';
     confirmationModal.classList.remove('hidden');
@@ -2203,6 +2523,10 @@ async function openDeletePersonConfirmation(personId) {
     // Remove any existing event listeners
     const newConfirmDelete = confirmDelete.cloneNode(true);
     confirmDelete.parentNode.replaceChild(newConfirmDelete, confirmDelete);
+    
+    // تخزين معلومات المجموعة للاستخدام عند الحذف
+    newConfirmDelete.setAttribute('data-id', personId);
+    newConfirmDelete.setAttribute('data-collection', collectionName);
     
     // Add new event listener
     newConfirmDelete.addEventListener('click', async () => {
@@ -2215,11 +2539,15 @@ async function openDeletePersonConfirmation(personId) {
                 return;
             }
             
+            // الحصول على اسم المجموعة من زر التأكيد
+            const collectionToUse = newConfirmDelete.getAttribute('data-collection') || 'persons';
+            console.log(`جاري حذف الشخص من المجموعة: ${collectionToUse}`);
+            
             // Get person data to delete image
-            const doc = await db.collection('persons').doc(personId).get();
+            const doc = await db.collection(collectionToUse).doc(personId).get();
             
             if (!doc.exists) {
-                console.error('Person document not found:', personId);
+                console.error(`Person document not found in ${collectionToUse}:`, personId);
                 alert('لم يتم العثور على الشخص المطلوب. قد يكون تم حذفه بالفعل.');
                 confirmationModal.classList.add('hidden');
                 return;
@@ -2254,11 +2582,11 @@ async function openDeletePersonConfirmation(personId) {
             }
             
             try {
-                // Delete person from Firestore
-                await db.collection('persons').doc(personId).delete();
+                // Delete person from Firestore using the correct collection
+                await db.collection(collectionToUse).doc(personId).delete();
                 
                 // Verify the deletion by trying to read the document
-                const verifyDoc = await db.collection('persons').doc(personId).get();
+                const verifyDoc = await db.collection(collectionToUse).doc(personId).get();
                 
                 if (verifyDoc.exists) {
                     throw new Error('فشل التحقق من حذف الشخص');
@@ -2323,8 +2651,16 @@ async function openDeleteSectionConfirmation(sectionId) {
         if (user) {
             const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
             if (adminDoc.exists) {
-                // منح جميع المسؤولين صلاحيات كاملة بغض النظر عن الدور
-                console.log('المستخدم هو مسؤول، السماح بحذف القسم');
+                const adminData = adminDoc.data();
+                if (adminData.role === 'superadmin') {
+                    console.log('المستخدم هو سوبر أدمين، السماح بحذف القسم بدون قيود');
+                } else if (adminData.role === 'admin') {
+                    console.log('المستخدم هو مسؤول عادي، السماح بحذف القسم');
+                } else {
+                    console.error('المستخدم ليس لديه دور مسؤول صالح، رفض حذف القسم');
+                    alert('ليس لديك صلاحيات كافية لحذف القسم. يرجى تسجيل الدخول مرة أخرى.');
+                    return;
+                }
             } else {
                 alert('ليس لديك صلاحيات كافية لحذف القسم. يجب أن تكون مسؤولاً.');
                 return;

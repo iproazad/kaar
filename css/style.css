@@ -17,6 +17,10 @@
     --dark-text: #f9fafb;
     --border-light: #e5e7eb;
     --border-dark: #374151;
+    --shadow-light: 0 4px 10px rgba(0, 0, 0, 0.05);
+    --shadow-dark: 0 4px 10px rgba(0, 0, 0, 0.2);
+    --shadow-hover-light: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    --shadow-hover-dark: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
 }
 
 * {
@@ -52,17 +56,21 @@ body {
     background-color: var(--light-card);
     border-radius: 12px;
     padding: 1.25rem;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    box-shadow: var(--shadow-light);
 }
 
 .dark .person-card {
     background-color: var(--dark-card);
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-dark);
 }
 
 .person-card:hover {
     transform: translateY(-5px);
-    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    box-shadow: var(--shadow-hover-light);
+}
+
+.dark .person-card:hover {
+    box-shadow: var(--shadow-hover-dark);
 }
 
 /* Text styles for better mobile display */
@@ -108,7 +116,7 @@ body {
     .person-card {
         background-color: var(--light-card);
         border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-light);
         padding: 1rem;
         margin-bottom: 1rem;
         transition: transform 0.3s, box-shadow 0.3s;
@@ -116,12 +124,16 @@ body {
     
     .dark .person-card {
         background-color: var(--dark-card);
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        box-shadow: var(--shadow-dark);
     }
     
     .person-card:hover {
         transform: translateY(-5px);
-        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        box-shadow: var(--shadow-hover-light);
+    }
+    
+    .dark .person-card:hover {
+        box-shadow: var(--shadow-hover-dark);
     }
     
     /* تحسين أزرار تسجيل الدخول والتسجيل للشاشات المتوسطة */
@@ -148,12 +160,22 @@ body {
         padding: 0.75rem;
         background-color: var(--light-card);
         border-radius: 12px;
-        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+        box-shadow: var(--shadow-light);
         transition: transform 0.3s, box-shadow 0.3s;
     }
     
     .dark .person-card {
         background-color: var(--dark-card);
+        box-shadow: var(--shadow-dark);
+    }
+    
+    /* تحسين إطار التصفية حسب القسم للشاشات الصغيرة */
+    .bg-white.dark\:bg-gray-800.rounded-lg.shadow-sm {
+        padding: 0.75rem;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
+    }
+    
+    .dark .bg-white.dark\:bg-gray-800.rounded-lg.shadow-sm {
         box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
     }
     
@@ -225,6 +247,25 @@ body {
     background-color: rgba(59, 130, 246, 0.1);
 }
 
+/* User Profile Card Styles */
+.bg-gray-100.dark\:bg-gray-700.rounded-lg {
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: var(--shadow-light);
+}
+
+.dark .bg-gray-100.dark\:bg-gray-700.rounded-lg {
+    box-shadow: var(--shadow-dark);
+}
+
+.bg-gray-100.dark\:bg-gray-700.rounded-lg:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover-light);
+}
+
+.dark .bg-gray-100.dark\:bg-gray-700.rounded-lg:hover {
+    box-shadow: var(--shadow-hover-dark);
+}
+
 /* Button Styles */
 button {
     cursor: pointer;
@@ -233,6 +274,25 @@ button {
 
 button:focus {
     outline: none;
+}
+
+/* تحسين أزرار التصفية حسب القسم */
+.category-filter {
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: var(--shadow-light);
+}
+
+.dark .category-filter {
+    box-shadow: var(--shadow-dark);
+}
+
+.category-filter:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover-light);
+}
+
+.dark .category-filter:hover {
+    box-shadow: var(--shadow-hover-dark);
 }
 
 /* تحسين مظهر الأزرار في الوضع الداكن */
@@ -250,12 +310,68 @@ input:focus, select:focus, textarea:focus {
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.3);
 }
 
-/* Modal Animations */
+/* Modal Animations and Styles */
 .modal {
     transition: opacity 0.3s, visibility 0.3s;
 }
 
-/* Responsive Grid Adjustments */
+/* Modal Content Styles */
+.bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg {
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: var(--shadow-light);
+}
+
+.dark .bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg {
+    box-shadow: var(--shadow-dark);
+}
+
+.bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg:hover {
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-hover-light);
+}
+
+.dark .bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg:hover {
+    box-shadow: var(--shadow-hover-dark);
+}
+
+/* Header and Navigation Styles */
+header.bg-white.dark\:bg-gray-800.shadow-md {
+    transition: box-shadow 0.3s;
+    box-shadow: var(--shadow-light);
+}
+
+.dark header.bg-white.dark\:bg-gray-800.shadow-md {
+    box-shadow: var(--shadow-dark);
+}
+
+nav.bg-white.dark\:bg-gray-800.shadow-sm {
+    transition: box-shadow 0.3s;
+    box-shadow: var(--shadow-light);
+}
+
+.dark nav.bg-white.dark\:bg-gray-800.shadow-sm {
+    box-shadow: var(--shadow-dark);
+}
+
+/* Category Filter and Frame Styles */
+.bg-white.dark\:bg-gray-800.rounded-lg.shadow-sm {
+    transition: transform 0.3s, box-shadow 0.3s;
+    box-shadow: var(--shadow-light);
+}
+
+.dark .bg-white.dark\:bg-gray-800.rounded-lg.shadow-sm {
+    box-shadow: var(--shadow-dark);
+}
+
+.bg-white.dark\:bg-gray-800.rounded-lg.shadow-sm:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-hover-light);
+}
+
+.dark .bg-white.dark\:bg-gray-800.rounded-lg.shadow-sm:hover {
+    box-shadow: var(--shadow-hover-dark);
+}
+
 @media (max-width: 640px) {
     .container {
         padding-left: 1rem;
