@@ -6,16 +6,26 @@ service cloud.firestore {
       return request.auth != null;
     }
     
-    // تحقق مما إذا كان المستخدم مسؤولاً
+    // تحقق مما إذا كان المستخدم مسؤولاً (admin)
     function isAdmin() {
       return isSignedIn() && exists(/databases/$(database)/documents/admins/$(request.auth.uid));
     }
     
-    // تحقق مما إذا كان المستخدم superadmin
+    // تحقق مما إذا كان المستخدم مطورًا (superadmin)
     function isSuperAdmin() {
       return isSignedIn() && 
              exists(/databases/$(database)/documents/admins/$(request.auth.uid)) && 
              get(/databases/$(database)/documents/admins/$(request.auth.uid)).data.role == 'superadmin';
+    }
+    
+    // تحقق مما إذا كان المستخدم صاحب أعمال (user عادي)
+    function isRegularUser() {
+      return isSignedIn() && exists(/databases/$(database)/documents/people/$(request.auth.uid));
+    }
+    
+    // تحقق مما إذا كان المستخدم هو صاحب المستند في مجموعة people
+    function isOwnerOfPeopleDoc(peopleId) {
+      return isSignedIn() && request.auth.uid == peopleId;
     }
     
     // تحقق من صاحب المستند
@@ -34,22 +44,37 @@ service cloud.firestore {
       });
     }
     
-    // قواعد المسؤولين
+    // قواعد المسؤولين (خاص بالمطور superadmin)
     match /admins/{adminId} {
+      // يمكن للمسجلين الدخول قراءة بيانات المسؤولين
       allow read: if isSignedIn();
-      allow write: if isAdmin() || isSuperAdmin();
+      // فقط المطور (superadmin) يمكنه إنشاء/تعديل/حذف المسؤولين
+      allow write: if isSuperAdmin() && logChange();
     }
     
     // قواعد الأقسام
     match /sections/{sectionId} {
-      allow read: if true; // يمكن للجميع قراءة الأقسام
+      // يمكن للجميع قراءة الأقسام
+      allow read: if true;
+      // يمكن للمسؤولين والمطورين إنشاء/تعديل/حذف الأقسام
       allow create, update, delete: if (isAdmin() || isSuperAdmin()) && logChange();
     }
     
-    // قواعد الأشخاص
+    // قواعد الأشخاص (خاص بالمشرف Admin)
     match /persons/{personId} {
-      allow read: if true; // يمكن للجميع قراءة بيانات الأشخاص
+      // يمكن للجميع قراءة بيانات الأشخاص
+      allow read: if true;
+      // فقط المسؤولين والمطورين يمكنهم إنشاء/تعديل/حذف الأشخاص
       allow create, update, delete: if (isAdmin() || isSuperAdmin()) && logChange();
+    }
+    
+    // قواعد المستخدمين العاديين (خاص بصاحب الأعمال user)
+    match /people/{peopleId} {
+      // يمكن للجميع قراءة بيانات المستخدمين العاديين
+      allow read: if true;
+      // يمكن للمستخدم العادي إنشاء/تعديل/حذف بياناته الخاصة فقط
+      allow create: if isSignedIn() && logChange();
+      allow update, delete: if (isOwnerOfPeopleDoc(peopleId) || isSuperAdmin()) && logChange();
     }
     
     // سجل التغييرات

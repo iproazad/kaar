@@ -35,6 +35,9 @@ async function checkAdminStatus() {
     }
 }
 
+// تعريف متغير عام لتحديد حالة المستخدم (زائر أم مسجل)
+window.isVisitor = true;
+
 // Wait for DOM to be fully loaded
 document.addEventListener('DOMContentLoaded', () => {
     // Initialize the application
@@ -94,6 +97,8 @@ function convertImgBBUrl(url) {
 
 // Main application initialization
 function initApp() {
+    console.log('بدء تهيئة التطبيق...');
+    
     // إضافة meta viewport tag للتأكد من عرض التطبيق بشكل صحيح على الأجهزة المحمولة
     const viewportMeta = document.querySelector('meta[name="viewport"]');
     if (!viewportMeta) {
@@ -101,28 +106,25 @@ function initApp() {
         newViewportMeta.name = 'viewport';
         newViewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
         document.head.appendChild(newViewportMeta);
+        console.log('تمت إضافة meta viewport tag');
     }
-    
-    // Check authentication state
-    checkAuthState();
-    
-    // Load data
-    loadSections();
-    loadPersons();
     
     // Setup event listeners
     setupEventListeners();
+    console.log('تم إعداد مستمعي الأحداث');
     
     // Setup dark mode
     setupDarkMode();
+    console.log('تم إعداد الوضع الداكن');
     
-    // Add viewport meta tag for better mobile responsiveness if not exists
-    if (!document.querySelector('meta[name="viewport"]')) {
-        const viewportMeta = document.createElement('meta');
-        viewportMeta.name = 'viewport';
-        viewportMeta.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no';
-        document.head.appendChild(viewportMeta);
-    }
+    // Check authentication state - سيقوم بتحميل البيانات بعد التحقق من حالة المستخدم
+    console.log('جاري التحقق من حالة المستخدم...');
+    checkAuthState();
+    
+    // ملاحظة: تم نقل تحميل البيانات إلى دالة checkAuthState
+    // لضمان تحميلها بعد التحقق من صلاحيات المستخدم
+    
+    console.log('اكتملت تهيئة التطبيق');
 }
 
 // دالة معالجة تغيير حجم الشاشة
@@ -144,16 +146,27 @@ function handleScreenResize() {
 // Check if user is authenticated
 function checkAuthState() {
     auth.onAuthStateChanged(async user => {
+        // إضافة متغير عام لتحديد ما إذا كان المستخدم زائرًا
+        window.isVisitor = !user;
         const loginBtn = document.getElementById('loginBtn');
         const registerBtn = document.getElementById('registerBtn');
         const logoutBtn = document.getElementById('logoutBtn');
         const dashboardBtn = document.getElementById('dashboardBtn');
         
         if (user) {
-            console.log('User is signed in:', user.email);
+            console.log('User is signed in:', user.email, 'UID:', user.uid);
             loginBtn.classList.add('hidden');
             registerBtn.classList.add('hidden');
             logoutBtn.classList.remove('hidden');
+            
+            // تعيين حالة المستخدم كمستخدم مسجل
+            window.isVisitor = false;
+            
+            // إزالة شريط تنبيه الزائر إذا كان موجودًا
+            const visitorBanner = document.getElementById('visitorBanner');
+            if (visitorBanner) {
+                visitorBanner.remove();
+            }
             
             // Add user profile button
             let userProfileBtn = document.getElementById('userProfileBtn');
@@ -173,35 +186,118 @@ function checkAuthState() {
                 userProfileBtn.classList.remove('hidden');
             }
             
-            // Check user role
+            // Check user role - first check in admins collection
             try {
+                console.log('التحقق من صلاحيات المستخدم في مجموعة المسؤولين...');
+                const adminDoc = await db.collection('admins').doc(user.uid).get();
+                
+                if (adminDoc.exists) {
+                    const adminData = adminDoc.data();
+                    console.log('بيانات المسؤول:', adminData);
+                    console.log('دور المستخدم في مجموعة المسؤولين:', adminData.role || 'غير محدد');
+                    
+                    if (adminData.role === 'admin' || adminData.role === 'superadmin') {
+                        // Admin user - show dashboard button
+                        dashboardBtn.classList.remove('hidden');
+                        console.log('تم تفعيل زر لوحة التحكم للمسؤول');
+                        // Load admin data
+                        loadAdmins();
+                        
+                        // إعادة تحميل البيانات بعد التحقق من الصلاحيات
+                        console.log('إعادة تحميل البيانات للمسؤول...');
+                        await loadSections();
+                        await loadPersons();
+                        return; // نخرج من الدالة بعد التعامل مع المسؤول
+                    }
+                }
+                
+                // إذا لم يكن المستخدم في مجموعة المسؤولين، نتحقق من مجموعة المستخدمين
+                console.log('التحقق من صلاحيات المستخدم في مجموعة المستخدمين العاديين...');
                 const userDoc = await db.collection('users').doc(user.uid).get();
+                
                 if (userDoc.exists) {
                     const userData = userDoc.data();
+                    console.log('بيانات المستخدم:', userData);
+                    console.log('دور المستخدم في مجموعة المستخدمين:', userData.role || 'غير محدد');
+                    
                     if (userData.role === 'admin') {
                         // Admin user - show dashboard button
                         dashboardBtn.classList.remove('hidden');
+                        console.log('تم تفعيل زر لوحة التحكم للمستخدم المسؤول');
                         // Load admin data
                         loadAdmins();
                     } else {
                         // Regular user - hide dashboard button
                         dashboardBtn.classList.add('hidden');
+                        console.log('تم إخفاء زر لوحة التحكم للمستخدم العادي');
                     }
+                } else {
+                    console.log('المستخدم غير موجود في مجموعة المستخدمين العاديين');
+                    dashboardBtn.classList.add('hidden');
                 }
+                
+                // إعادة تحميل البيانات للمستخدم العادي
+                console.log('إعادة تحميل البيانات للمستخدم العادي...');
+                await loadSections();
+                await loadPersons();
+                
             } catch (error) {
                 console.error('Error checking user role:', error);
+                console.log('خطأ في التحقق من صلاحيات المستخدم:', error.message);
+                
+                // في حالة حدوث خطأ، نحاول تحميل البيانات على أي حال
+                try {
+                    console.log('محاولة تحميل البيانات بعد حدوث خطأ...');
+                    await loadSections();
+                    await loadPersons();
+                } catch (loadError) {
+                    console.error('خطأ في تحميل البيانات بعد فشل التحقق من الصلاحيات:', loadError);
+                }
             }
         } else {
-            console.log('User is signed out');
+            console.log('No user is signed in');
             loginBtn.classList.remove('hidden');
             registerBtn.classList.remove('hidden');
             logoutBtn.classList.add('hidden');
             dashboardBtn.classList.add('hidden');
             
+            // تعيين حالة المستخدم كزائر
+            window.isVisitor = true;
+            
+            // إضافة شريط تنبيه للزائر في أعلى الصفحة إذا لم يكن موجودًا
+            if (!document.getElementById('visitorBanner')) {
+                const header = document.querySelector('header');
+                const visitorBanner = document.createElement('div');
+                visitorBanner.id = 'visitorBanner';
+                visitorBanner.className = 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 py-2 text-center';
+                visitorBanner.innerHTML = `
+                    <div class="container mx-auto px-4">
+                        <i class="fas fa-info-circle ml-2"></i>
+                        أنت تتصفح كزائر. <a href="#" id="loginBannerBtn" class="text-blue-600 dark:text-blue-400 underline font-bold">سجل الدخول</a> للوصول إلى جميع الميزات.
+                    </div>
+                `;
+                document.body.insertBefore(visitorBanner, header);
+                
+                // إضافة حدث النقر على زر تسجيل الدخول في الشريط
+                document.getElementById('loginBannerBtn').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('loginModal').classList.remove('hidden');
+                });
+            }
+            
             // Hide user profile button if exists
             const userProfileBtn = document.getElementById('userProfileBtn');
             if (userProfileBtn) {
                 userProfileBtn.classList.add('hidden');
+            }
+            
+            // محاولة تحميل البيانات العامة حتى للمستخدمين غير المسجلين
+            try {
+                console.log('تحميل البيانات للمستخدم غير المسجل...');
+                loadSections();
+                loadPersons();
+            } catch (error) {
+                console.error('خطأ في تحميل البيانات للمستخدم غير المسجل:', error);
             }
         }
     });
@@ -669,6 +765,10 @@ async function loadSections() {
             return;
         }
         
+        // تحقق من حالة تسجيل الدخول قبل محاولة جلب البيانات
+        const user = auth.currentUser;
+        console.log('حالة تسجيل الدخول عند تحميل الأقسام:', user ? 'مسجل الدخول' : 'غير مسجل الدخول');
+        
         // Try to get sections with error handling
         let snapshot;
         try {
@@ -677,12 +777,23 @@ async function loadSections() {
             console.log('Sections fetched successfully:', snapshot.size, 'sections found');
         } catch (fetchError) {
             console.error('Error fetching sections:', fetchError);
+            console.log('رمز الخطأ:', fetchError.code);
+            console.log('رسالة الخطأ:', fetchError.message);
             
             // Show specific error message based on error code
             if (fetchError.code === 'unavailable') {
                 alert('لا يمكن الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.');
             } else if (fetchError.code === 'permission-denied') {
                 alert('ليس لديك صلاحيات كافية للوصول إلى البيانات. يرجى تسجيل الدخول مرة أخرى.');
+                
+                // إعادة تسجيل الدخول تلقائيًا إذا كان المستخدم مسجل الدخول بالفعل
+                if (auth.currentUser) {
+                    console.log('محاولة إعادة تسجيل الدخول تلقائيًا...');
+                    auth.signOut().then(() => {
+                        // إعادة تحميل الصفحة بعد تسجيل الخروج
+                        window.location.reload();
+                    });
+                }
             } else {
                 alert('حدث خطأ أثناء تحميل البيانات: ' + fetchError.message);
             }
@@ -834,6 +945,69 @@ async function loadPersons() {
             return;
         }
         
+        // تحقق من حالة تسجيل الدخول
+        const user = auth.currentUser;
+        console.log('حالة تسجيل الدخول عند تحميل الأشخاص:', user ? `مسجل الدخول (${user.uid})` : 'غير مسجل الدخول');
+        
+        // متغيرات لتخزين دور المستخدم
+        let userRole = 'visitor'; // زائر افتراضيًا
+        let userId = null;
+        let userPeopleId = null;
+        
+        // إذا كان المستخدم مسجل الدخول، تحقق من دوره
+        if (user) {
+            userId = user.uid;
+            try {
+                // التحقق إذا كان المستخدم مطور (superadmin)
+                const adminDoc = await db.collection('admins').doc(user.uid).get();
+                if (adminDoc.exists) {
+                    const adminData = adminDoc.data();
+                    if (adminData.role === 'superadmin') {
+                        userRole = 'superadmin';
+                        console.log('دور المستخدم: مطور (superadmin)');
+                    } else {
+                        userRole = 'admin';
+                        console.log('دور المستخدم: مشرف (admin)');
+                    }
+                } else {
+                    // التحقق إذا كان المستخدم صاحب أعمال (user عادي)
+                    const peopleQuery = await db.collection('people').where('userId', '==', user.uid).get();
+                    if (!peopleQuery.empty) {
+                        userRole = 'user';
+                        userPeopleId = peopleQuery.docs[0].id;
+                        console.log('دور المستخدم: صاحب أعمال (user)');
+                    }
+                }
+            } catch (roleError) {
+                console.error('خطأ في التحقق من دور المستخدم:', roleError);
+            }
+        }
+        
+        // تحديد المجموعة التي سيتم تحميلها بناءً على دور المستخدم
+        let collectionToLoad;
+        let queryConstraints = [];
+        
+        if (userRole === 'superadmin') {
+            // المطور يمكنه الوصول إلى جميع المجموعات
+            collectionToLoad = 'persons'; // افتراضيًا نعرض مجموعة persons
+        } else if (userRole === 'admin') {
+            // المشرف يمكنه الوصول إلى مجموعة persons فقط
+            collectionToLoad = 'persons';
+        } else if (userRole === 'user') {
+            // صاحب الأعمال يمكنه الوصول إلى بياناته الخاصة في مجموعة people
+            collectionToLoad = 'people';
+            if (userPeopleId) {
+                queryConstraints.push(['id', '==', userPeopleId]);
+            }
+        } else {
+            // الزائر يمكنه الوصول إلى بيانات محدودة من مجموعة persons
+            console.log('دخول كزائر: عرض بيانات محدودة');
+            collectionToLoad = 'persons';
+            // تحديد عدد السجلات التي يمكن للزائر رؤيتها (10 سجلات فقط)
+            const visitorLimit = 10;
+            console.log(`تم تحديد عرض ${visitorLimit} سجلات فقط للزائر`);
+        }
+        
         try {
             // Clear existing persons
             const personsGrid = document.getElementById('personsGrid');
@@ -844,13 +1018,95 @@ async function loadPersons() {
             personsGrid.innerHTML = '';
             console.log('تم مسح العناصر السابقة من الشبكة');
             
-            // Load persons from 'persons' collection
-            console.log('جاري جلب بيانات الأشخاص من Firestore...');
-            const personsSnapshot = await window.db.collection('persons').get();
-            console.log(`تم جلب ${personsSnapshot.size} شخص من مجموعة persons`);
-            
             // تطبيق استجابة الشاشة على شبكة العرض
             handleScreenResize();
+            
+            // تحقق من حالة تسجيل الدخول قبل محاولة جلب البيانات
+            const user = auth.currentUser;
+            console.log('حالة تسجيل الدخول:', user ? 'مسجل الدخول' : 'غير مسجل الدخول');
+            
+            // Load persons based on user role and collection
+            console.log(`جاري جلب بيانات الأشخاص من مجموعة ${collectionToLoad}...`);
+            let personsSnapshot;
+            try {
+                let query = window.db.collection(collectionToLoad);
+                
+                // تطبيق القيود المحددة للاستعلام إن وجدت
+                if (queryConstraints.length > 0) {
+                    for (const [field, operator, value] of queryConstraints) {
+                        query = query.where(field, operator, value);
+                    }
+                }
+                
+                // ترتيب البيانات حسب تاريخ الإنشاء للزوار
+                if (window.isVisitor) {
+                    const visitorLimit = 10; // تحديد عدد السجلات للزائر
+                    query = query.orderBy('createdAt', 'desc').limit(visitorLimit);
+                    console.log(`تطبيق حد العرض للزائر: ${visitorLimit} سجلات`);
+                }
+                
+                personsSnapshot = await query.get();
+                console.log(`تم جلب ${personsSnapshot.size} شخص من مجموعة ${collectionToLoad}`);
+            } catch (personsError) {
+                console.error(`خطأ في جلب بيانات الأشخاص من مجموعة ${collectionToLoad}:`, personsError);
+                console.log('رمز الخطأ:', personsError.code);
+                console.log('رسالة الخطأ:', personsError.message);
+                
+                if (personsError.code === 'permission-denied') {
+                    console.log('خطأ في الصلاحيات عند محاولة جلب بيانات الأشخاص');
+                    
+                    // التعامل مع الخطأ بشكل مختلف للزوار والمستخدمين المسجلين
+                    if (auth.currentUser) {
+                        // للمستخدمين المسجلين: إعادة تسجيل الدخول
+                        console.log('محاولة إعادة تسجيل الدخول تلقائيًا...');
+                        alert('ليس لديك صلاحيات كافية للوصول إلى بيانات الأشخاص. سيتم تسجيل خروجك وإعادة تحميل الصفحة.');
+                        auth.signOut().then(() => {
+                            // إعادة تحميل الصفحة بعد تسجيل الخروج
+                            window.location.reload();
+                        });
+                    } else {
+                        // للزوار: عرض رسالة أكثر ودية
+                        console.log('زائر يحاول الوصول إلى بيانات محمية');
+                        const personsGrid = document.getElementById('personsGrid');
+                        personsGrid.innerHTML = `
+                            <div class="col-span-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 p-6 rounded-lg text-center">
+                                <i class="fas fa-lock text-4xl mb-4"></i>
+                                <h3 class="text-xl font-bold mb-2">هذه البيانات محمية</h3>
+                                <p class="mb-4">يمكنك الوصول إلى بيانات محدودة فقط كزائر. للوصول إلى المزيد من البيانات، يرجى تسجيل الدخول.</p>
+                                <button id="loginPromptError" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                                    <i class="fas fa-sign-in-alt ml-2"></i>تسجيل الدخول
+                                </button>
+                            </div>
+                        `;
+                        
+                        // إضافة حدث النقر على زر تسجيل الدخول
+                        document.getElementById('loginPromptError').addEventListener('click', () => {
+                            document.getElementById('loginModal').classList.remove('hidden');
+                        });
+                    }
+                    return; // الخروج من الدالة في حالة وجود خطأ في الصلاحيات
+                }
+                
+                // إذا كان هناك خطأ آخر، نستمر بمجموعة فارغة
+                personsSnapshot = { empty: true, forEach: () => {}, size: 0 };
+            }
+            
+            // إضافة رسالة تنبيه للزوار إذا كانوا غير مسجلين
+            if (window.isVisitor) {
+                const visitorAlert = document.createElement('div');
+                visitorAlert.className = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 p-4 rounded-lg mb-6 w-full text-center';
+                visitorAlert.innerHTML = `
+                    <i class="fas fa-info-circle ml-2"></i>
+                    أنت تشاهد نسخة محدودة من البيانات. <a href="#" id="loginPrompt" class="text-blue-600 dark:text-blue-400 underline">سجل الدخول</a> لمشاهدة المزيد.
+                `;
+                personsGrid.appendChild(visitorAlert);
+                
+                // إضافة حدث النقر على رابط تسجيل الدخول
+                document.getElementById('loginPrompt').addEventListener('click', (e) => {
+                    e.preventDefault();
+                    document.getElementById('loginModal').classList.remove('hidden');
+                });
+            }
             
             // Add persons to grid
             personsSnapshot.forEach(doc => {
@@ -873,51 +1129,107 @@ async function loadPersons() {
                     <span class="text-sm text-blue-600 dark:text-blue-400 text-center">${person.section}</span>
                 `;
                 
+                // إضافة حدث النقر لعرض التفاصيل أو طلب تسجيل الدخول للزوار
+                card.addEventListener('click', () => {
+                    // للزوار: عرض نافذة تسجيل الدخول عند محاولة عرض التفاصيل
+                    if (window.isVisitor) {
+                        const confirmView = confirm('للاطلاع على التفاصيل الكاملة، يرجى تسجيل الدخول. هل تريد تسجيل الدخول الآن؟');
+                        if (confirmView) {
+                            document.getElementById('loginModal').classList.remove('hidden');
+                        }
+                    } else {
+                        // للمستخدمين المسجلين: عرض التفاصيل الكاملة
+                        showPersonDetails(person, personId, collectionToLoad);
+                    }
+                });
+                
                 personsGrid.appendChild(card);
             });
             
             // Load registered users from 'people' collection
             console.log('جاري جلب بيانات المستخدمين المسجلين من Firestore...');
-            const peopleSnapshot = await window.db.collection('people').get();
-            console.log(`تم جلب ${peopleSnapshot.size} مستخدم مسجل من مجموعة people`);
+            let peopleSnapshot;
+            try {
+                peopleSnapshot = await window.db.collection('people').get();
+                console.log(`تم جلب ${peopleSnapshot.size} مستخدم مسجل من مجموعة people`);
+            } catch (peopleError) {
+                console.error('خطأ في جلب بيانات المستخدمين المسجلين:', peopleError);
+                console.log('رمز الخطأ:', peopleError.code);
+                console.log('رسالة الخطأ:', peopleError.message);
+                
+                if (peopleError.code === 'permission-denied') {
+                    console.log('خطأ في الصلاحيات عند محاولة جلب بيانات المستخدمين المسجلين');
+                    // لا نعرض تنبيه هنا لأننا عرضنا تنبيه سابقًا في حالة خطأ جلب بيانات الأشخاص
+                    
+                    // إذا لم نقم بتسجيل الخروج سابقًا، نقوم بذلك الآن
+                    if (auth.currentUser) {
+                        console.log('محاولة إعادة تسجيل الدخول تلقائيًا...');
+                        auth.signOut().then(() => {
+                            // إعادة تحميل الصفحة بعد تسجيل الخروج
+                            window.location.reload();
+                        });
+                    }
+                    return; // الخروج من الدالة في حالة وجود خطأ في الصلاحيات
+                }
+                
+                // إذا كان هناك خطأ آخر، نستمر بمجموعة فارغة
+                peopleSnapshot = { empty: true, forEach: () => {}, size: 0 };
+            }
             
             // Add registered users to grid
-            peopleSnapshot.forEach(async doc => {
+            const sectionPromises = [];
+            
+            peopleSnapshot.forEach(doc => {
                 const person = doc.data();
                 const personId = doc.id;
                 
                 // Skip if no section (incomplete profile)
                 if (!person.sectionId) return;
                 
-                // Get section name
-                let sectionName = '';
-                try {
-                    const sectionDoc = await db.collection('sections').doc(person.sectionId).get();
-                    if (sectionDoc.exists) {
-                        sectionName = sectionDoc.data().name;
+                // Get section name - add to promises array to handle all at once
+                const promise = (async () => {
+                    let sectionName = '';
+                    try {
+                        const sectionDoc = await db.collection('sections').doc(person.sectionId).get();
+                        if (sectionDoc.exists) {
+                            sectionName = sectionDoc.data().name;
+                        }
+                    } catch (error) {
+                        console.error('خطأ في جلب اسم القسم:', error);
+                        console.log('رمز الخطأ:', error.code);
+                        console.log('رسالة الخطأ:', error.message);
+                        
+                        // إذا كان الخطأ بسبب عدم وجود صلاحيات
+                        if (error.code === 'permission-denied') {
+                            console.log('خطأ في الصلاحيات عند محاولة جلب اسم القسم');
+                            sectionName = 'غير متاح - خطأ في الصلاحيات';
+                        }
                     }
-                } catch (error) {
-                    console.error('خطأ في جلب اسم القسم:', error);
-                }
+                    
+                    const card = document.createElement('div');
+                    card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center person-card';
+                    card.setAttribute('data-category', sectionName);
+                    
+                    // تحسين عرض الصور على الأجهزة المحمولة
+                    const imageUrl = await getDirectImageUrl(person.imageUrl);
+                    
+                    card.innerHTML = `
+                        <div class="image-container mb-4">
+                            <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'; this.onerror=null;">
+                        </div>
+                        <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2 text-center">${person.name}</h3>
+                        <p class="text-gray-600 dark:text-gray-300 mb-1 text-center">${person.job}</p>
+                        <span class="text-sm text-blue-600 dark:text-blue-400 text-center">${sectionName}</span>
+                    `;
+                    
+                    personsGrid.appendChild(card);
+                })();
                 
-                const card = document.createElement('div');
-                card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center person-card';
-                card.setAttribute('data-category', sectionName);
-                
-                // تحسين عرض الصور على الأجهزة المحمولة
-                const imageUrl = await getDirectImageUrl(person.imageUrl);
-                
-                card.innerHTML = `
-                    <div class="image-container mb-4">
-                        <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'; this.onerror=null;">
-                    </div>
-                    <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2 text-center">${person.name}</h3>
-                    <p class="text-gray-600 dark:text-gray-300 mb-1 text-center">${person.job}</p>
-                    <span class="text-sm text-blue-600 dark:text-blue-400 text-center">${sectionName}</span>
-                `;
-                
-                personsGrid.appendChild(card);
+                sectionPromises.push(promise);
             });
+            
+            // Wait for all section promises to complete
+            await Promise.all(sectionPromises);
             
             console.log('تم إضافة جميع الأشخاص والمستخدمين المسجلين إلى الشبكة بنجاح');
             
@@ -940,6 +1252,14 @@ async function loadPersons() {
                 alert('لا يمكن الاتصال بالخادم. يرجى التحقق من اتصالك بالإنترنت.');
             } else if (fetchError.code === 'permission-denied') {
                 alert('ليس لديك صلاحيات كافية للوصول إلى البيانات. يرجى تسجيل الدخول مرة أخرى.');
+                // إعادة تسجيل الدخول تلقائيًا إذا كان المستخدم مسجل الدخول بالفعل
+                if (auth.currentUser) {
+                    console.log('محاولة إعادة تسجيل الدخول تلقائيًا...');
+                    auth.signOut().then(() => {
+                        // إعادة تحميل الصفحة بعد تسجيل الخروج
+                        window.location.reload();
+                    });
+                }
             } else {
                 alert('حدث خطأ أثناء تحميل البيانات: ' + fetchError.message);
             }
@@ -1916,77 +2236,6 @@ async function openDeletePersonConfirmation(personId) {
         }
     });
 }
-
-import React, { useEffect, useState } from "react";
-import { auth } from "./auth";       // ملف auth.js عندك فيه Firebase Auth
-import { getUserRole } from "./auth"; // الدالة اللي شرحناها
-
-function App() {
-  const [user, setUser] = useState(null);
-  const [role, setRole] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    // مراقبة تسجيل الدخول
-    const unsubscribe = auth.onAuthStateChanged(async (currentUser) => {
-      if (currentUser) {
-        setUser(currentUser);
-        const roleResult = await getUserRole(); // استدعاء الدالة
-        setRole(roleResult);
-      } else {
-        setUser(null);
-        setRole(null);
-      }
-      setLoading(false);
-    });
-
-    return () => unsubscribe();
-  }, []);
-
-  if (loading) {
-    return <p>جارٍ التحميل...</p>;
-  }
-
-  if (!user) {
-    return <p>يرجى تسجيل الدخول</p>;
-  }
-
-  // تخصيص الواجهات حسب الدور
-  if (role === "superadmin") {
-    return (
-      <div>
-        <h1>مرحباً SuperAdmin 🚀</h1>
-        <p>لديك صلاحيات كاملة على التطبيق</p>
-        {/* ضع هنا مكونات الـ dashboard الكاملة */}
-      </div>
-    );
-  }
-
-  if (role === "admin") {
-    return (
-      <div>
-        <h1>مرحباً Admin 👮‍♂️</h1>
-        <p>يمكنك إدارة الأشخاص (persons)</p>
-        {/* ضع هنا المكونات الخاصة بالمشرف */}
-      </div>
-    );
-  }
-
-  if (role === "user") {
-    return (
-      <div>
-        <h1>مرحباً مستخدم 👤</h1>
-        <p>يمكنك تعديل بياناتك فقط</p>
-        {/* ضع هنا واجهة صاحب الأعمال (people) */}
-      </div>
-    );
-  }
-
-  return <p>ليس لديك صلاحيات كافية للوصول إلى البيانات.</p>;
-}
-
-export default App;
-
 
 // Open delete section confirmation
 async function openDeleteSectionConfirmation(sectionId) {
