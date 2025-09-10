@@ -53,9 +53,115 @@ header, nav, .container, .bg-white, .bg-gray-50, .bg-gray-100 {
     color: var(--dark-text) !important;
 }
 
-/* تطبيق الوضع الداكن على النصوص */
-h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea, label {
+/* تطبيق الوضع الداكن على النصوص - تحسين وضوح النصوص وجعلها أكثر جاذبية */
+h1, h2, h3, h4, h5, h6 {
+    color: #ffffff;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+    font-weight: 700;
+    letter-spacing: 0.7px;
+    position: relative;
+    display: inline-block;
+    margin-bottom: 0.75rem;
+}
+
+h1::after, h2::after, h3::after {
+    content: '';
+    position: absolute;
+    bottom: -5px;
+    left: 0;
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 3px;
+}
+
+p {
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+    line-height: 1.7;
+}
+
+span {
+    color: rgba(255, 255, 255, 0.85);
+    font-weight: 400;
+}
+
+a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    position: relative;
+    padding: 0 2px;
+}
+
+a::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 2px;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
+}
+
+a:hover {
+    color: var(--secondary-color);
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
+}
+
+button, input, select, textarea, label {
     color: var(--dark-text);
+}
+
+input, select, textarea {
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    color: white;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+}
+
+input:focus, select:focus, textarea:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    outline: none;
+}
+
+input::placeholder, textarea::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+}
+
+button {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    font-weight: 600;
+    padding: 0.6rem 1.2rem;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: none;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+    cursor: pointer;
+}
+
+button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+    filter: brightness(1.1);
 }
 
 /* تطبيق الوضع الداكن على الحدود */
@@ -63,58 +169,270 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea, label {
     border-color: var(--border-dark) !important;
 }
 
-/* Card Styles - Unified Elegant Design */
+/* Card Styles - Enhanced Elegant Design */
 .person-card {
-    transition: transform 0.3s, box-shadow 0.3s;
+    transition: all 0.4s ease;
     height: 100%;
     display: flex;
     flex-direction: column;
     align-items: center;
     text-align: center;
-    background-color: var(--dark-card);
-    border-radius: 12px;
-    padding: 1.25rem;
-    box-shadow: var(--shadow-dark);
+    background: linear-gradient(145deg, #1a2436, #2a3a4d);
+    border-radius: 16px;
+    padding: 1.5rem;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    border-left: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.person-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(to right, transparent, rgba(255, 255, 255, 0.05), transparent);
+    transform: translateX(-100%);
+    transition: transform 0.6s ease;
 }
 
 .person-card:hover {
-    transform: translateY(-5px);
-    box-shadow: var(--shadow-hover-dark);
+    transform: translateY(-8px) scale(1.02);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
 }
 
-/* Text styles for better mobile display */
+.person-card:hover::before {
+    transform: translateX(100%);
+}
+
+/* Enhanced Text Styles - تحسين أنماط النصوص لتكون أكثر وضوحاً وجاذبية */
 .person-card h3 {
     text-align: center;
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    font-weight: 700;
+    font-size: 1.35rem;
+    margin-bottom: 0.75rem;
+    color: #ffffff;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.7px;
+    position: relative;
+    padding-bottom: 0.5rem;
 }
 
-.person-card p, .person-card span {
+.person-card h3::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+    border-radius: 3px;
+}
+
+.person-card p {
     text-align: center;
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: rgba(255, 255, 255, 0.95);
+    font-size: 1rem;
+    margin-bottom: 0.75rem;
+    font-weight: 500;
+    line-height: 1.5;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
-/* Image Styles */
+.person-card span {
+    text-align: center;
+    width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    color: var(--primary-color);
+    font-size: 0.95rem;
+    display: block;
+    font-weight: 500;
+    letter-spacing: 0.5px;
+    text-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+}
+
+/* Enhanced Image Styles */
 .person-card img {
-    border: 4px solid var(--primary-color);
-    transition: transform 0.3s;
+    border: 4px solid transparent;
+    background: linear-gradient(145deg, var(--primary-color), var(--primary-dark)) border-box;
+    transition: all 0.4s ease;
     object-fit: cover;
     border-radius: 50%;
     display: block;
-    margin: 0 auto;
+    margin: 0 auto 1rem;
     width: 128px;
     height: 128px;
     max-width: 100%;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+    filter: brightness(1.05) contrast(1.05);
 }
 
 .person-card:hover img {
-    transform: scale(1.05);
+    transform: scale(1.08) rotate(3deg);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Role Badge Styles - شارة الدور المهني */
+.person-card .image-container {
+    position: relative;
+    margin-bottom: 1rem;
+}
+
+.person-card .role-badge {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    color: white;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    font-size: 1rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    opacity: 0.9;
+    transform: translate(5px, 5px);
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+}
+
+.person-card:hover .role-badge {
+    transform: translate(0, 0) scale(1.1);
+    opacity: 1;
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
+}
+
+/* Interactive Action Buttons - أزرار تفاعلية محسنة */
+.person-card .card-actions {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 1.5rem;
+    width: 100%;
+    opacity: 0.7;
+    transition: all 0.3s ease;
+}
+
+.person-card:hover .card-actions {
+    opacity: 1;
+}
+
+.person-card .action-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #ffffff;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    backdrop-filter: blur(5px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.person-card .action-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.2), transparent);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.person-card .action-btn:hover::before {
+    opacity: 1;
+}
+
+.person-card .action-btn:hover {
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 8px 15px rgba(0, 0, 0, 0.35);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.person-card .view-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.person-card .contact-btn:hover {
+    background: var(--secondary-color);
+    color: white;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
 }
 
 /* Media Queries for Responsive Design - Unified Style */
+@media (max-width: 768px) {
+    .person-card {
+        padding: 1rem;
+        border-radius: 12px;
+        background: linear-gradient(145deg, #1a2436, #232f42);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.25);
+        transition: all 0.3s ease;
+    }
+    
+    .person-card:hover {
+        transform: translateY(-5px);
+    }
+    
+    .person-card img {
+        width: 100px;
+        height: 100px;
+        border: 3px solid transparent;
+    }
+    
+    .person-card .role-badge {
+        width: 28px;
+        height: 28px;
+        font-size: 0.85rem;
+    }
+    
+    .person-card .card-actions {
+        margin-top: 0.75rem;
+    }
+    
+    .person-card .action-btn {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(5px);
+    }
+}
+
+.person-card .action-btn:hover {
+    background: var(--primary-color);
+    transform: translateY(-3px);
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+}
+
 @media (max-width: 768px) {
     /* تحسين تخطيط الهيدر للشاشات المتوسطة */
     header .container {
@@ -133,39 +451,95 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea, label {
     .person-card img {
         width: 100px;
         height: 100px;
-        border: 3px solid var(--primary-color);
+        border: 3px solid transparent;
+        background: linear-gradient(145deg, var(--primary-color), var(--primary-dark)) border-box;
     }
     
     .person-card {
-        background-color: var(--dark-card);
+        background: linear-gradient(145deg, #1a2436, #2a3a4d);
         border-radius: 12px;
-        box-shadow: var(--shadow-dark);
+        box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
         padding: 1rem;
         margin-bottom: 1rem;
-        transition: transform 0.3s, box-shadow 0.3s;
+        transition: all 0.4s ease;
     }
     
     .person-card:hover {
-        transform: translateY(-5px);
-        box-shadow: var(--shadow-hover-dark);
+        transform: translateY(-5px) scale(1.01);
+        box-shadow: 0 12px 24px rgba(0, 0, 0, 0.4);
     }
     
     /* تحسين أزرار تسجيل الدخول والتسجيل للشاشات المتوسطة */
     #loginBtn, #registerBtn, #dashboardBtn, #logoutBtn {
-        font-size: 0.9rem;
-        padding: 0.5rem 0.75rem;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 0.95rem;
+        padding: 0.6rem 1rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: none;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    
+    #loginBtn:hover, #registerBtn:hover, #dashboardBtn:hover, #logoutBtn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        filter: brightness(1.1);
     }
     
     /* تحسين شريط البحث للشاشات المتوسطة */
     #searchInput {
         width: 180px;
+        padding: 0.6rem 1rem;
+        border-radius: 8px;
+        border: 2px solid rgba(255, 255, 255, 0.1);
+        background: rgba(255, 255, 255, 0.05);
+        color: white;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+    
+    #searchInput:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+        outline: none;
+    }
+    
+    #searchInput::placeholder {
+        color: rgba(255, 255, 255, 0.5);
     }
     
     /* تحسين شريط التنقل للشاشات المتوسطة */
     nav ul {
         justify-content: center;
+    }
+    
+    /* تحسين زر تسجيل الدخول الرئيسي */
+    .login-button {
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        font-weight: 600;
+        padding: 0.75rem 1.5rem;
+        border-radius: 10px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.25);
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: none;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+        letter-spacing: 0.5px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .login-button:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.35);
+        filter: brightness(1.1);
     }
     
     /* تحسين عرض الشبكة للشاشات المتوسطة */
@@ -259,14 +633,27 @@ h1, h2, h3, h4, h5, h6, p, span, a, button, input, select, textarea, label {
     
     /* تحسين أزرار تسجيل الدخول والتسجيل للشاشات الصغيرة (الموبايل) */
     #loginBtn, #registerBtn, #dashboardBtn, #logoutBtn {
-        font-size: 0.8rem;
-        padding: 0.4rem 0.6rem;
-        border-radius: 6px;
-        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        font-size: 0.85rem;
+        padding: 0.5rem 0.8rem;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
         margin-right: 0.25rem;
         display: flex;
         align-items: center;
         justify-content: center;
+        background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+        color: white;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: none;
+        text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    }
+    
+    #loginBtn:hover, #registerBtn:hover, #dashboardBtn:hover, #logoutBtn:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+        filter: brightness(1.1);
     }
     
     /* إخفاء النص واظهار الأيقونة فقط في الشاشات الصغيرة جدًا */
@@ -626,6 +1013,65 @@ nav.bg-white.dark\:bg-gray-800.shadow-sm {
 
 .animate-pulse {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+}
+
+/* Notification Card Styles - تحسين أنماط بطاقات الإشعارات */
+.notification-card {
+    background: linear-gradient(145deg, #1e2a3d, #283850);
+    border-radius: 15px;
+    padding: 1.25rem;
+    margin-bottom: 1.25rem;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    border-left: 4px solid var(--primary-color);
+}
+
+.notification-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+.notification-card h3 {
+    color: #ffffff;
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 0.75rem;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.notification-card p {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1rem;
+    line-height: 1.6;
+    margin-bottom: 0.5rem;
+}
+
+.notification-card .notification-time {
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    font-weight: 500;
+    display: block;
+    margin-top: 0.75rem;
+    text-align: left;
+}
+
+.notification-card .notification-icon {
+    position: absolute;
+    top: 1rem;
+    right: 1rem;
+    width: 2.5rem;
+    height: 2.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 1.2rem;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 /* Custom scrollbar */

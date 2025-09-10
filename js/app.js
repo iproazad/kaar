@@ -1202,14 +1202,19 @@ async function loadPersons() {
                 card.innerHTML = `
                     <div class="image-container mb-4">
                         <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'; this.onerror=null;">
+                        <div class="role-badge">${person.job ? person.job.substring(0, 1).toUpperCase() : '?'}</div>
                     </div>
                     <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2 text-center">${person.name}</h3>
                     <p class="text-gray-600 dark:text-gray-300 mb-1 text-center">${person.job}</p>
                     <span class="text-sm text-blue-600 dark:text-blue-400 text-center">${person.section}</span>
+                    <div class="card-actions">
+                        <button class="action-btn view-btn" title="عرض التفاصيل"><i class="fas fa-eye"></i></button>
+                        <button class="action-btn contact-btn" title="تواصل"><i class="fas fa-envelope"></i></button>
+                    </div>
                 `;
                 
-                // إضافة حدث النقر لعرض التفاصيل أو طلب تسجيل الدخول للزوار
-                card.addEventListener('click', () => {
+                // إضافة أحداث النقر للبطاقة وأزرار التفاعل
+                const viewDetailsHandler = () => {
                     // للزوار: عرض نافذة تسجيل الدخول عند محاولة عرض التفاصيل
                     if (window.isVisitor) {
                         const confirmView = confirm('للاطلاع على التفاصيل الكاملة، يرجى تسجيل الدخول. هل تريد تسجيل الدخول الآن؟');
@@ -1220,7 +1225,43 @@ async function loadPersons() {
                         // للمستخدمين المسجلين: عرض التفاصيل الكاملة
                         showPersonDetails(person, personId, collectionToLoad);
                     }
+                };
+                
+                // إضافة حدث النقر للبطاقة نفسها
+                card.addEventListener('click', (e) => {
+                    // تجاهل النقر إذا كان على الأزرار
+                    if (!e.target.closest('.card-actions')) {
+                        viewDetailsHandler();
+                    }
                 });
+                
+                // إضافة أحداث النقر لأزرار التفاعل
+                const viewBtn = card.querySelector('.view-btn');
+                const contactBtn = card.querySelector('.contact-btn');
+                
+                if (viewBtn) {
+                    viewBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // منع انتشار الحدث للبطاقة
+                        viewDetailsHandler();
+                    });
+                }
+                
+                if (contactBtn) {
+                    contactBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // منع انتشار الحدث للبطاقة
+                        // للزوار: طلب تسجيل الدخول
+                        if (window.isVisitor) {
+                            const confirmContact = confirm('للتواصل مع هذا الشخص، يرجى تسجيل الدخول أولاً. هل تريد تسجيل الدخول الآن؟');
+                            if (confirmContact) {
+                                document.getElementById('loginModal').classList.remove('hidden');
+                            }
+                        } else {
+                            // للمستخدمين المسجلين: عرض نافذة التواصل
+                            alert(`سيتم قريباً إضافة ميزة التواصل مع ${person.name}`);
+                            // هنا يمكن إضافة كود لفتح نافذة التواصل أو إرسال رسالة
+                        }
+                    });
+                }
                 
                 personsGrid.appendChild(card);
             });
