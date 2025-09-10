@@ -48,24 +48,24 @@ service cloud.firestore {
     match /admins/{adminId} {
       // يمكن للمسجلين الدخول قراءة بيانات المسؤولين
       allow read: if isSignedIn();
-      // فقط المطور (superadmin) يمكنه إنشاء/تعديل/حذف المسؤولين
-      allow write: if isSuperAdmin() && logChange();
+      // فقط المطور (superadmin) يمكنه إنشاء/تعديل/حذف المسؤولين بدون قيود
+      allow write: if isSuperAdmin();
     }
     
     // قواعد الأقسام
     match /sections/{sectionId} {
       // يمكن للجميع قراءة الأقسام
       allow read: if true;
-      // يمكن للمسؤولين والمطورين إنشاء/تعديل/حذف الأقسام
-      allow create, update, delete: if (isAdmin() || isSuperAdmin()) && logChange();
+      // منح السوبر أدمين كامل الصلاحيات بدون قيود
+      allow create, update, delete: if isSuperAdmin();
     }
     
     // قواعد الأشخاص (خاص بالمشرف Admin)
     match /persons/{personId} {
       // يمكن للجميع قراءة بيانات الأشخاص
       allow read: if true;
-      // فقط المسؤولين والمطورين يمكنهم إنشاء/تعديل/حذف الأشخاص
-      allow create, update, delete: if (isAdmin() || isSuperAdmin()) && logChange();
+      // منح السوبر أدمين كامل الصلاحيات بدون قيود
+      allow create, update, delete: if isSuperAdmin();
     }
     
     // قواعد المستخدمين العاديين (خاص بصاحب الأعمال user)
@@ -74,7 +74,8 @@ service cloud.firestore {
       allow read: if true;
       // يمكن للمستخدم العادي إنشاء/تعديل/حذف بياناته الخاصة فقط
       allow create: if isSignedIn() && logChange();
-      allow update, delete: if (isOwnerOfPeopleDoc(peopleId) || isSuperAdmin()) && logChange();
+      // منح السوبر أدمين كامل الصلاحيات بدون قيود
+      allow update, delete: if isSuperAdmin() || (isOwnerOfPeopleDoc(peopleId) && logChange());
     }
     
     // سجل التغييرات
@@ -87,7 +88,9 @@ service cloud.firestore {
     // قاعدة افتراضية لجميع المستندات الأخرى
     match /{document=**} {
       allow read: if isSignedIn();
-      allow write: if isAdmin() && logChange();
+      // منح السوبر أدمين كامل الصلاحيات بدون قيود
+      allow write: if isSuperAdmin();
     }
   }
 }
+

@@ -107,6 +107,20 @@ body {
 
 /* Media Queries for Responsive Design - Unified Style */
 @media (max-width: 768px) {
+    /* تحسين تخطيط الهيدر للشاشات المتوسطة */
+    header .container {
+        flex-direction: column;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    header .flex.items-center.space-x-4.space-x-reverse {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+    
     .person-card img {
         width: 100px;
         height: 100px;
@@ -148,9 +162,58 @@ body {
     #searchInput {
         width: 180px;
     }
+    
+    /* تحسين شريط التنقل للشاشات المتوسطة */
+    nav ul {
+        justify-content: center;
+    }
+    
+    /* تحسين عرض الشبكة للشاشات المتوسطة */
+    #personsGrid {
+        grid-template-columns: repeat(2, 1fr);
+    }
 }
 
 @media (max-width: 480px) {
+    /* تحسين تخطيط الهيدر للشاشات الصغيرة */
+    header .container {
+        flex-direction: column;
+        align-items: center;
+        padding: 0.5rem;
+        gap: 0.75rem;
+    }
+    
+    header .flex.items-center.space-x-4.space-x-reverse {
+        width: 100%;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    
+    /* تحسين شريط التنقل للشاشات الصغيرة */
+    nav .container ul {
+        flex-direction: row;
+        justify-content: center;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+        padding: 0.25rem;
+    }
+    
+    nav .container ul li {
+        margin: 0;
+    }
+    
+    nav .container ul li a {
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    /* تحسين عرض الشبكة للشاشات الصغيرة */
+    #personsGrid {
+        grid-template-columns: 1fr;
+        gap: 0.75rem;
+    }
+    
     .person-card img {
         width: 80px;
         height: 80px;
@@ -216,10 +279,16 @@ body {
     }
     
     /* تحسين شريط البحث للشاشات الصغيرة */
+    .relative {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
     #searchInput {
-        width: 120px;
+        width: 100%;
         font-size: 0.8rem;
-        padding: 0.4rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 0.5rem;
     }
     
     /* تحسين تباعد العناصر في الهيدر */
@@ -240,11 +309,31 @@ body {
     align-items: center;
     margin-bottom: 1rem;
     min-height: 80px;
+    overflow: hidden;
 }
 
 /* Fix for image loading issues on mobile */
 .image-container img {
     background-color: rgba(59, 130, 246, 0.1);
+    object-fit: cover;
+    transition: transform 0.3s ease;
+}
+
+/* تحسين عرض الصور على الأجهزة المحمولة */
+@media (max-width: 480px) {
+    .image-container {
+        min-height: 60px;
+    }
+    
+    .image-container img {
+        max-width: 100%;
+        height: auto;
+    }
+    
+    /* تحسين حجم الصور في البطاقات */
+    .person-card .image-container {
+        margin-bottom: 0.5rem;
+    }
 }
 
 /* User Profile Card Styles */
@@ -276,6 +365,32 @@ button:focus {
     outline: none;
 }
 
+/* تحسين أزرار الهيدر للأجهزة المحمولة */
+@media (max-width: 768px) {
+    #darkModeToggle {
+        order: -1;
+        margin-left: 0.5rem;
+    }
+    
+    .relative {
+        order: 0;
+        width: 100%;
+    }
+    
+    #loginBtn, #registerBtn, #dashboardBtn, #logoutBtn {
+        order: 1;
+    }
+    
+    /* تحسين تفاعل الأزرار على الأجهزة اللمسية */
+    button, a {
+        -webkit-tap-highlight-color: transparent;
+    }
+    
+    button:active, a:active {
+        transform: scale(0.95);
+    }
+}
+
 /* تحسين أزرار التصفية حسب القسم */
 .category-filter {
     transition: transform 0.3s, box-shadow 0.3s;
@@ -293,6 +408,23 @@ button:focus {
 
 .dark .category-filter:hover {
     box-shadow: var(--shadow-hover-dark);
+}
+
+/* تحسين أزرار التصفية للأجهزة المحمولة */
+@media (max-width: 480px) {
+    #categoryFilters {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
+    }
+    
+    .category-filter {
+        font-size: 0.8rem;
+        padding: 0.4rem 0.6rem;
+        margin: 0;
+        flex-grow: 0;
+    }
 }
 
 /* تحسين مظهر الأزرار في الوضع الداكن */
@@ -332,6 +464,37 @@ input:focus, select:focus, textarea:focus {
 
 .dark .bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg:hover {
     box-shadow: var(--shadow-hover-dark);
+}
+
+/* تحسين النوافذ المنبثقة للأجهزة المحمولة */
+@media (max-width: 480px) {
+    #loginModal .bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg,
+    #registerModal .bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg,
+    #personModal .bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg,
+    #editPersonModal .bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg,
+    #addPersonModal .bg-white.dark\:bg-gray-800.rounded-lg.shadow-lg {
+        width: 95%;
+        max-width: 100%;
+        margin: 0 auto;
+        padding: 1rem;
+    }
+    
+    .modal form input,
+    .modal form select,
+    .modal form textarea {
+        font-size: 0.9rem;
+        padding: 0.5rem;
+    }
+    
+    .modal form label {
+        font-size: 0.9rem;
+        margin-bottom: 0.25rem;
+    }
+    
+    .modal form button {
+        font-size: 0.9rem;
+        padding: 0.5rem 1rem;
+    }
 }
 
 /* Header and Navigation Styles */
@@ -397,6 +560,45 @@ nav.bg-white.dark\:bg-gray-800.shadow-sm {
         grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
         gap: 1rem;
     }
+}
+
+/* تحسينات للشاشات الصغيرة جداً */
+@media (max-width: 360px) {
+    header h1.text-2xl {
+        font-size: 1.25rem;
+    }
+    
+    #personsGrid {
+        grid-template-columns: 1fr;
+    }
+    
+    .person-card {
+        padding: 0.75rem;
+    }
+    
+    .person-card img {
+        width: 4rem;
+        height: 4rem;
+    }
+    
+    /* تحسين أزرار الهيدر */
+    #loginBtn, #registerBtn, #dashboardBtn, #logoutBtn {
+        padding: 0.3rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    /* تحسين شريط التنقل */
+    nav .container ul li a {
+        padding: 0.4rem 0.6rem;
+        font-size: 0.8rem;
+    }
+    
+    /* تحسين أزرار التصفية */
+    .category-filter {
+        font-size: 0.75rem;
+        padding: 0.3rem 0.5rem;
+    }
+}
     
     /* Ensure text is centered and readable on mobile */
     .person-card h3 {
