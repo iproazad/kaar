@@ -1170,22 +1170,7 @@ async function loadPersons() {
                 personsSnapshot = { empty: true, forEach: () => {}, size: 0 };
             }
             
-            // إضافة رسالة تنبيه للزوار إذا كانوا غير مسجلين
-            if (window.isVisitor) {
-                const visitorAlert = document.createElement('div');
-                visitorAlert.className = 'bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 p-4 rounded-lg mb-6 w-full text-center';
-                visitorAlert.innerHTML = `
-                    <i class="fas fa-info-circle ml-2"></i>
-                    أنت تشاهد نسخة محدودة من البيانات. <a href="#" id="loginPrompt" class="text-blue-600 dark:text-blue-400 underline">سجل الدخول</a> لمشاهدة المزيد.
-                `;
-                personsGrid.appendChild(visitorAlert);
-                
-                // إضافة حدث النقر على رابط تسجيل الدخول
-                document.getElementById('loginPrompt').addEventListener('click', (e) => {
-                    e.preventDefault();
-                    document.getElementById('loginModal').classList.remove('hidden');
-                });
-            }
+            // تم إزالة رسالة تنبيه الزوار بناءً على طلب المستخدم
             
             // Add persons to grid
             personsSnapshot.forEach(doc => {
