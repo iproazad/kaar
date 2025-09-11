@@ -986,7 +986,7 @@ function updateSectionsTable(snapshot) {
         if (deleteButton) {
             deleteButton.addEventListener('click', () => {
                 console.log('Delete section button clicked for:', sectionId);
-                openConfirmationModal('section', sectionId);
+                openDeleteSectionConfirmation(sectionId);
             });
         } else {
             console.error('Delete section button not found for section:', sectionId);
@@ -1110,9 +1110,9 @@ async function loadPersons() {
                 
                 // ترتيب البيانات حسب تاريخ الإنشاء للزوار
                 if (window.isVisitor) {
-                    const visitorLimit = 10; // تحديد عدد السجلات للزائر
-                    query = query.orderBy('createdAt', 'desc').limit(visitorLimit);
-                    console.log(`تطبيق حد العرض للزائر: ${visitorLimit} سجلات`);
+                    // إزالة القيد على عدد السجلات للزائر لعرض جميع البطاقات عند التصفية
+                    query = query.orderBy('createdAt', 'desc');
+                    console.log('تم إزالة القيد على عدد السجلات للزائر لعرض جميع البطاقات');
                 }
                 
                 personsSnapshot = await query.get();
@@ -1572,14 +1572,27 @@ async function loadAdmins() {
 // Filter persons by category
 function filterPersonsByCategory(category) {
     const personCards = document.querySelectorAll('.person-card');
+    console.log('تصفية حسب القسم:', category);
+    console.log('عدد البطاقات الكلي:', personCards.length);
+    
+    let visibleCount = 0;
+    let hiddenCount = 0;
     
     personCards.forEach(card => {
-        if (category === 'all' || card.getAttribute('data-category') === category) {
+        const cardCategory = card.getAttribute('data-category');
+        console.log('فئة البطاقة:', cardCategory);
+        
+        if (category === 'all' || cardCategory === category) {
             card.classList.remove('hidden');
+            visibleCount++;
         } else {
             card.classList.add('hidden');
+            hiddenCount++;
         }
     });
+    
+    console.log('البطاقات المرئية:', visibleCount);
+    console.log('البطاقات المخفية:', hiddenCount);
 }
 
 // Handle search functionality
@@ -1940,12 +1953,33 @@ async function handleAddAdmin(e) {
             return;
         }
         
-        // التحقق من صلاحيات المستخدم كمسؤول
-        const isAdmin = await checkAdminStatus();
-        if (!isAdmin) {
+        // التحقق من صلاحيات المستخدم
+        const user = firebase.auth().currentUser;
+        if (!user) {
+            alert('ليس لديك صلاحيات كافية لإضافة مسؤول جديد. يجب أن تكون مسجل الدخول.');
+            return;
+        }
+        
+        // التحقق من دور المستخدم
+        const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
+        if (!adminDoc.exists) {
             alert('ليس لديك صلاحيات كافية لإضافة مسؤول جديد. يجب أن تكون مسؤولاً.');
             return;
         }
+        
+        const adminData = adminDoc.data();
+        console.log('دور المستخدم:', adminData.role);
+        
+        if (adminData.role === 'superadmin') {
+            console.log('المستخدم هو سوبر أدمين، السماح بإضافة مسؤول جديد بدون قيود');
+        } else if (adminData.role === 'admin') {
+            console.log('المستخدم هو مسؤول عادي، السماح بإضافة مسؤول جديد');
+        } else {
+            alert('ليس لديك صلاحيات كافية لإضافة مسؤول جديد. يجب أن تكون مسؤولاً.');
+            return;
+        }
+        
+        console.log('المستخدم هو ' + adminData.role + '، السماح بإضافة مسؤول جديد');
         
         // Check if email already exists in admins collection
         const adminsSnapshot = await window.db.collection('admins').where('email', '==', email).get();
@@ -2670,32 +2704,29 @@ async function openDeleteSectionConfirmation(sectionId) {
         return;
     }
     
-    // التحقق من صلاحيات المستخدم كمسؤول
-    const isAdmin = await checkAdminStatus();
-    if (!isAdmin) {
-        // التحقق من دور المستخدم
-        const user = firebase.auth().currentUser;
-        if (user) {
-            const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
-            if (adminDoc.exists) {
-                const adminData = adminDoc.data();
-                if (adminData.role === 'superadmin') {
-                    console.log('المستخدم هو سوبر أدمين، السماح بحذف القسم بدون قيود');
-                } else if (adminData.role === 'admin') {
-                    console.log('المستخدم هو مسؤول عادي، السماح بحذف القسم');
-                } else {
-                    console.error('المستخدم ليس لديه دور مسؤول صالح، رفض حذف القسم');
-                    alert('ليس لديك صلاحيات كافية لحذف القسم. يرجى تسجيل الدخول مرة أخرى.');
-                    return;
-                }
-            } else {
-                alert('ليس لديك صلاحيات كافية لحذف القسم. يجب أن تكون مسؤولاً.');
-                return;
-            }
-        } else {
-            alert('ليس لديك صلاحيات كافية لحذف القسم. يجب أن تكون مسؤولاً.');
-            return;
-        }
+    // التحقق من صلاحيات المستخدم
+    const user = firebase.auth().currentUser;
+    if (!user) {
+        alert('ليس لديك صلاحيات كافية لحذف القسم. يجب أن تكون مسؤولاً.');
+        return;
+    }
+    
+    // التحقق من دور المستخدم
+    const adminDoc = await firebase.firestore().collection('admins').doc(user.uid).get();
+    if (!adminDoc.exists) {
+        alert('ليس لديك صلاحيات كافية لحذف القسم. يجب أن تكون مسؤولاً.');
+        return;
+    }
+    
+    const adminData = adminDoc.data();
+    if (adminData.role === 'superadmin') {
+        console.log('المستخدم هو سوبر أدمين، السماح بحذف القسم بدون قيود');
+    } else if (adminData.role === 'admin') {
+        console.log('المستخدم هو مسؤول عادي، السماح بحذف القسم');
+    } else {
+        console.error('المستخدم ليس لديه دور مسؤول صالح، رفض حذف القسم');
+        alert('ليس لديك صلاحيات كافية لحذف القسم. يرجى تسجيل الدخول مرة أخرى.');
+        return;
     }
     
     confirmationMessage.textContent = 'هل أنت متأكد من أنك تريد حذف هذا القسم؟';
