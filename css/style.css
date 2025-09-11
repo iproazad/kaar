@@ -346,6 +346,26 @@ button:hover {
     transform: translateY(-2px);
 }
 
+/* City Badge Styles - شارة المدينة */
+.person-card .city-badge {
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    color: white;
+    padding: 0.3rem 0.8rem;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    margin: 0.5rem auto;
+    display: inline-block;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    text-align: center;
+    transition: all 0.3s ease;
+}
+
+.person-card:hover .city-badge {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
 .person-card .action-btn {
     background: var(--gradient-mixed);
     border: 2px solid rgba(255, 255, 255, 0.2);
@@ -405,6 +425,19 @@ button:hover {
     background: var(--gradient-secondary);
     color: white;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+}
+
+.person-card .call-btn {
+    background: linear-gradient(135deg, #25d366, #128c7e);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.person-card .call-btn:hover {
+    background: linear-gradient(135deg, #2ecc71, #27ae60);
+    color: white;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.4);
+    transform: translateY(-5px) scale(1.1);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
 }
 
 /* Media Queries for Responsive Design - Unified Style */

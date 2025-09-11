@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>kaar - اختيار المدينة</title>
+    <link rel="stylesheet" href="css/style.css">
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- تحسين التوافق مع الأجهزة المحمولة -->
+    <meta name="theme-color" content="#ffffff">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+    <!-- Header Section -->
+    <header class="bg-white dark:bg-gray-800 shadow-md">
+        <div class="container mx-auto px-4 py-4 flex justify-between items-center">
+            <div class="flex items-center">
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-white">kaar</h1>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-4 py-12">
+        <div class="max-w-2xl mx-auto text-center mb-10">
+            <h2 class="text-3xl font-bold text-gray-800 dark:text-white mb-4">اختر المدينة</h2>
+            <p class="text-lg text-gray-600 dark:text-gray-300">اختر المدينة التي ترغب في استعراض أصحاب الأعمال فيها</p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+            <!-- مدينة دهوك -->
+            <div class="city-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 cursor-pointer" onclick="selectCity('duhok')">
+                <div class="h-48 bg-blue-600 flex items-center justify-center">
+                    <i class="fas fa-city text-white text-6xl"></i>
+                </div>
+                <div class="p-6 text-center">
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">مدينة دهوك</h3>
+                    <p class="text-gray-600 dark:text-gray-300">استعراض أصحاب الأعمال في مدينة دهوك</p>
+                    <button class="mt-4 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition duration-300 shadow-md w-full">
+                        <i class="fas fa-arrow-left ml-2"></i>دخول
+                    </button>
+                </div>
+            </div>
+
+            <!-- مدينة زاخو -->
+            <div class="city-card bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden transition-transform duration-300 hover:transform hover:scale-105 cursor-pointer" onclick="selectCity('zakho')">
+                <div class="h-48 bg-green-600 flex items-center justify-center">
+                    <i class="fas fa-city text-white text-6xl"></i>
+                </div>
+                <div class="p-6 text-center">
+                    <h3 class="text-2xl font-bold text-gray-800 dark:text-white mb-2">مدينة زاخو</h3>
+                    <p class="text-gray-600 dark:text-gray-300">استعراض أصحاب الأعمال في مدينة زاخو</p>
+                    <button class="mt-4 bg-green-600 hover:bg-green-700 text-white px-6 py-3 rounded-lg transition duration-300 shadow-md w-full">
+                        <i class="fas fa-arrow-left ml-2"></i>دخول
+                    </button>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white dark:bg-gray-800 shadow-inner py-6 mt-12">
+        <div class="container mx-auto px-4 text-center">
+            <p class="text-gray-600 dark:text-gray-300">© 2023 kaar - جميع الحقوق محفوظة</p>
+        </div>
+    </footer>
+
+    <!-- JavaScript -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-storage.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-functions.js"></script>
+    <script src="js/config.js"></script>
+    <script>
+        // تفعيل الوضع الداكن دائمًا
+        document.documentElement.classList.add('dark');
+        
+        // دالة اختيار المدينة
+        function selectCity(city) {
+            // حفظ المدينة المختارة في localStorage بأحرف صغيرة للتوحيد
+            localStorage.setItem('selectedCity', city.toLowerCase());
+            // الانتقال إلى الصفحة الرئيسية
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

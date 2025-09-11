@@ -14,6 +14,17 @@
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <!-- التحقق من اختيار المدينة -->
+    <script>
+        // التحقق من اختيار المدينة عند تحميل الصفحة
+        window.addEventListener('DOMContentLoaded', function() {
+            const selectedCity = localStorage.getItem('selectedCity');
+            if (!selectedCity) {
+                // إذا لم يتم اختيار مدينة، انتقل إلى صفحة اختيار المدينة
+                window.location.href = 'city_select.html';
+            }
+        });
+    </script>
 </head>
 <body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
     <!-- Header Section -->
@@ -21,6 +32,7 @@
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center">
                 <h1 class="text-2xl font-bold text-gray-800 dark:text-white">kaar</h1>
+                <div id="cityIndicator" class="mr-4 px-3 py-1 rounded-full text-sm font-medium"></div>
             </div>
             <div class="flex items-center space-x-4 space-x-reverse">
                 <!-- Search Bar -->
@@ -214,6 +226,17 @@
                             </select>
                         </div>
                         <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">المدينة</label>
+                            <select id="personCity" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                                <option value="دهوك">دهوك</option>
+                                <option value="زاخو">زاخو</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 dark:text-gray-300 mb-2">رقم الهاتف</label>
+                            <input type="tel" id="personPhone" placeholder="07xxxxxxxx" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        </div>
+                        <div>
                             <label class="block text-gray-700 dark:text-gray-300 mb-2">رابط الصورة</label>
                             <input type="text" id="directImageUrl" placeholder="https://ibb.co/0jsTLgnm" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                             <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">يمكنك إدخال رابط صفحة عرض الصورة من ImgBB مثل https://ibb.co/0jsTLgnm أو رابط مباشر للصورة ينتهي بامتداد الصورة مثل .jpg أو .png. <a href="imgbb_guide.html" target="_blank" class="text-blue-500 hover:underline">شاهد الدليل المصور</a></p>
@@ -234,6 +257,7 @@
                                     <th scope="col" class="px-6 py-3">الاسم</th>
                                     <th scope="col" class="px-6 py-3">الوظيفة</th>
                                     <th scope="col" class="px-6 py-3">القسم</th>
+                                    <th scope="col" class="px-6 py-3">المدينة</th>
                                     <th scope="col" class="px-6 py-3">الإجراءات</th>
                                 </tr>
                             </thead>
@@ -354,6 +378,17 @@
                     <select id="editPersonSection" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                         <!-- Sections will be loaded dynamically here -->
                     </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">المدينة</label>
+                    <select id="editPersonCity" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        <option value="دهوك">دهوك</option>
+                        <option value="زاخو">زاخو</option>
+                    </select>
+                </div>
+                <div class="mb-4">
+                    <label class="block text-gray-700 dark:text-gray-300 mb-2">رقم الهاتف</label>
+                    <input type="tel" id="editPersonPhone" placeholder="07xxxxxxxx" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
                 </div>
                 <div class="mb-4">
                     <label class="block text-gray-700 dark:text-gray-300 mb-2">الصورة الحالية</label>

@@ -167,6 +167,16 @@ function initApp() {
         console.log('تمت إضافة meta viewport tag');
     }
     
+    // التحقق من المدينة المختارة وعرضها
+    const selectedCity = localStorage.getItem('selectedCity') || 'duhok';
+    updateCityIndicator(selectedCity);
+    console.log('المدينة المختارة:', selectedCity);
+    // تأكد من تخزين المدينة بأحرف صغيرة في localStorage
+    localStorage.setItem('selectedCity', selectedCity.toLowerCase());
+    
+    // إضافة زر تغيير المدينة
+    addChangeCityButton();
+    
     // Setup event listeners
     setupEventListeners();
     console.log('تم إعداد مستمعي الأحداث');
@@ -183,6 +193,41 @@ function initApp() {
     // لضمان تحميلها بعد التحقق من صلاحيات المستخدم
     
     console.log('اكتملت تهيئة التطبيق');
+}
+
+// دالة تحديث مؤشر المدينة
+function updateCityIndicator(city) {
+    const cityIndicator = document.getElementById('cityIndicator');
+    if (cityIndicator) {
+        // تحويل المدينة إلى أحرف صغيرة للمقارنة
+        const normalizedCity = city.toLowerCase();
+        
+        if (normalizedCity === 'duhok' || normalizedCity === 'دهوك') {
+            cityIndicator.textContent = 'مدينة دهوك';
+            cityIndicator.className = 'mr-4 px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200';
+        } else if (normalizedCity === 'zakho' || normalizedCity === 'زاخو') {
+            cityIndicator.textContent = 'مدينة زاخو';
+            cityIndicator.className = 'mr-4 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+        }
+    }
+}
+
+// دالة إضافة زر تغيير المدينة
+function addChangeCityButton() {
+    const navContainer = document.querySelector('nav .container ul');
+    if (navContainer) {
+        const changeCityItem = document.createElement('li');
+        const changeCityLink = document.createElement('a');
+        changeCityLink.href = '#';
+        changeCityLink.className = 'block py-4 px-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition duration-300';
+        changeCityLink.innerHTML = '<i class="fas fa-exchange-alt ml-1"></i>تغيير المدينة';
+        changeCityLink.addEventListener('click', function(e) {
+            e.preventDefault();
+            window.location.href = 'city_select.html';
+        });
+        changeCityItem.appendChild(changeCityLink);
+        navContainer.appendChild(changeCityItem);
+    }
 }
 
 // دالة معالجة تغيير حجم الشاشة
@@ -1009,6 +1054,10 @@ async function loadPersons() {
             return;
         }
         
+        // الحصول على المدينة المختارة
+        const selectedCity = localStorage.getItem('selectedCity') || 'duhok';
+        console.log('تحميل البيانات للمدينة:', selectedCity);
+        
         // تحقق من حالة تسجيل الدخول
         const user = auth.currentUser;
         console.log('حالة تسجيل الدخول عند تحميل الأشخاص:', user ? `مسجل الدخول (${user.uid})` : 'غير مسجل الدخول');
@@ -1052,6 +1101,22 @@ async function loadPersons() {
         let queryConstraints = [];
         let loadBothCollections = false; // متغير للتحكم في تحميل كلا المجموعتين
         
+        // إضافة قيد المدينة للاستعلام
+        // تحويل المدينة المختارة إلى الصيغة المناسبة (أحرف صغيرة) لتتطابق مع القيمة المخزنة
+        const normalizedCity = selectedCity.toLowerCase();
+        // تحديد المدن المقابلة للمدينة المختارة
+        let cityValues = [];
+        if (normalizedCity === 'duhok') {
+            cityValues = ['duhok', 'دهوك'];
+        } else if (normalizedCity === 'zakho') {
+            cityValues = ['zakho', 'زاخو'];
+        } else {
+            cityValues = [normalizedCity];
+        }
+        // استخدام where in للبحث عن المدينة بالإنجليزية والعربية المقابلة للمدينة المختارة فقط
+        queryConstraints.push(['city', 'in', cityValues]);
+        console.log('تم إضافة قيد المدينة:', normalizedCity, 'مع القيم المقابلة:', cityValues);
+        
         if (userRole === 'superadmin') {
             // المطور يمكنه الوصول إلى جميع المجموعات
             collectionToLoad = 'persons'; // افتراضيًا نعرض مجموعة persons
@@ -1064,7 +1129,10 @@ async function loadPersons() {
             loadBothCollections = true; // تفعيل تحميل كلا المجموعتين
             collectionToLoad = 'people';
             if (userPeopleId) {
+                // استبدال قيد المعرف بقيد المعرف والمدينة
+                queryConstraints = [];
                 queryConstraints.push(['id', '==', userPeopleId]);
+                queryConstraints.push(['city', '==', selectedCity]);
             }
         } else {
             // الزائر يمكنه الوصول إلى بيانات محدودة من مجموعة persons
@@ -1104,6 +1172,7 @@ async function loadPersons() {
                 // تطبيق القيود المحددة للاستعلام إن وجدت
                 if (queryConstraints.length > 0) {
                     for (const [field, operator, value] of queryConstraints) {
+                        console.log(`تطبيق قيد: ${field} ${operator} ${value}`);
                         query = query.where(field, operator, value);
                     }
                 }
@@ -1192,9 +1261,11 @@ async function loadPersons() {
                     <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2 text-center">${person.name}</h3>
                     <p class="text-gray-600 dark:text-gray-300 mb-1 text-center">${person.job}</p>
                     <span class="text-sm text-blue-600 dark:text-blue-400 text-center">${person.section}</span>
+                    <div class="city-badge">${person.city === 'zakho' || person.city === 'زاخو' ? 'مدينة زاخو' : 'مدينة دهوك'}</div>
                     <div class="card-actions">
                         <button class="action-btn view-btn" title="عرض التفاصيل"><i class="fas fa-eye"></i></button>
                         <button class="action-btn contact-btn" title="تواصل"><i class="fas fa-envelope"></i></button>
+                        ${person.phone ? `<button class="action-btn call-btn" title="اتصال"><i class="fas fa-phone"></i></button>` : ''}
                     </div>
                 `;
                 
@@ -1223,6 +1294,7 @@ async function loadPersons() {
                 // إضافة أحداث النقر لأزرار التفاعل
                 const viewBtn = card.querySelector('.view-btn');
                 const contactBtn = card.querySelector('.contact-btn');
+                const callBtn = card.querySelector('.call-btn');
                 
                 if (viewBtn) {
                     viewBtn.addEventListener('click', (e) => {
@@ -1244,6 +1316,22 @@ async function loadPersons() {
                             // للمستخدمين المسجلين: عرض نافذة التواصل
                             alert(`سيتم قريباً إضافة ميزة التواصل مع ${person.name}`);
                             // هنا يمكن إضافة كود لفتح نافذة التواصل أو إرسال رسالة
+                        }
+                    });
+                }
+                
+                if (callBtn && person.phone) {
+                    callBtn.addEventListener('click', (e) => {
+                        e.stopPropagation(); // منع انتشار الحدث للبطاقة
+                        // للزوار: طلب تسجيل الدخول
+                        if (window.isVisitor) {
+                            const confirmCall = confirm('للاتصال بهذا الشخص، يرجى تسجيل الدخول أولاً. هل تريد تسجيل الدخول الآن؟');
+                            if (confirmCall) {
+                                document.getElementById('loginModal').classList.remove('hidden');
+                            }
+                        } else {
+                            // للمستخدمين المسجلين: فتح تطبيق الاتصال
+                            window.location.href = `tel:${person.phone}`;
                         }
                     });
                 }
@@ -1415,11 +1503,39 @@ function updatePersonsTable(snapshot, secondSnapshot = null) {
     personsTableBody.innerHTML = '';
     console.log('جاري تحديث جدول الأشخاص...');
     
+    // الحصول على المدينة المختارة
+    const selectedCity = localStorage.getItem('selectedCity') || 'duhok';
+    const normalizedCity = selectedCity.toLowerCase();
+    
+    // تحديد المدن المقابلة للمدينة المختارة
+    let cityValues = [];
+    if (normalizedCity === 'duhok') {
+        cityValues = ['duhok', 'دهوك'];
+    } else if (normalizedCity === 'zakho') {
+        cityValues = ['zakho', 'زاخو'];
+    } else {
+        cityValues = [normalizedCity];
+    }
+    
+    console.log('تحديث جدول الأشخاص للمدينة:', normalizedCity, 'مع القيم المقابلة:', cityValues);
+    
     // إضافة بيانات من المجموعة الأولى (persons أو people)
     snapshot.forEach(doc => {
         const person = doc.data();
         const personId = doc.id;
         const collectionName = doc.ref.parent.id; // اسم المجموعة التي ينتمي إليها المستند
+        
+        // تطبيق فلترة المدينة - عرض فقط الأشخاص في المدينة المختارة
+        const personCity = (person.city || '');
+        // تحويل المدينة إلى أحرف صغيرة للمقارنة
+        const personCityLower = personCity.toLowerCase();
+        // طباعة معلومات تصحيح الأخطاء
+        console.log('مدينة الشخص:', personCity, 'بعد التحويل:', personCityLower);
+        // التحقق من وجود المدينة في القائمة (بالأحرف الصغيرة أو العربية)
+        if (!cityValues.includes(personCityLower) && !cityValues.includes(personCity)) {
+            console.log('تخطي الشخص لأن مدينته غير مطابقة للمدينة المختارة');
+            return; // تخطي هذا الشخص إذا لم يكن في المدينة المختارة
+        }
         
         const row = document.createElement('tr');
         row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700';
@@ -1436,6 +1552,7 @@ function updatePersonsTable(snapshot, secondSnapshot = null) {
             <td class="px-6 py-4 text-center">${person.name}</td>
             <td class="px-6 py-4 text-center">${person.job}</td>
             <td class="px-6 py-4 text-center">${person.section}</td>
+            <td class="px-6 py-4 text-center">${person.city || 'غير محدد'}</td>
             <td class="px-6 py-4 text-center">
                 <button class="edit-person-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 ml-2" data-id="${personId}" data-collection="${collectionName}">
                     <i class="fas fa-edit"></i>
@@ -1456,6 +1573,18 @@ function updatePersonsTable(snapshot, secondSnapshot = null) {
             const personId = doc.id;
             const collectionName = doc.ref.parent.id; // اسم المجموعة التي ينتمي إليها المستند
             
+            // تطبيق فلترة المدينة - عرض فقط الأشخاص في المدينة المختارة
+            const personCity = (person.city || '');
+            // تحويل المدينة إلى أحرف صغيرة للمقارنة
+            const personCityLower = personCity.toLowerCase();
+            // طباعة معلومات تصحيح الأخطاء
+            console.log('مدينة الشخص (المجموعة الثانية):', personCity, 'بعد التحويل:', personCityLower);
+            // التحقق من وجود المدينة في القائمة (بالأحرف الصغيرة أو العربية)
+            if (!cityValues.includes(personCityLower) && !cityValues.includes(personCity)) {
+                console.log('تخطي الشخص لأن مدينته غير مطابقة للمدينة المختارة');
+                return; // تخطي هذا الشخص إذا لم يكن في المدينة المختارة
+            }
+            
             const row = document.createElement('tr');
             row.className = 'bg-white border-b dark:bg-gray-800 dark:border-gray-700';
             
@@ -1471,6 +1600,7 @@ function updatePersonsTable(snapshot, secondSnapshot = null) {
                 <td class="px-6 py-4 text-center">${person.name}</td>
                 <td class="px-6 py-4 text-center">${person.job}</td>
                 <td class="px-6 py-4 text-center">${person.section}</td>
+                <td class="px-6 py-4 text-center">${person.city || 'غير محدد'}</td>
                 <td class="px-6 py-4 text-center">
                     <button class="edit-person-btn text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 ml-2" data-id="${personId}" data-collection="${collectionName}">
                         <i class="fas fa-edit"></i>
@@ -1620,10 +1750,21 @@ async function handleAddPerson(e) {
     const name = document.getElementById('personName').value;
     const job = document.getElementById('personJob').value;
     const section = document.getElementById('personSection').value;
+    // تحويل المدينة إلى القيمة المناسبة للتخزين
+    let city = document.getElementById('personCity').value;
+    // تحويل أسماء المدن العربية إلى الإنجليزية للتوحيد
+    if (city === 'دهوك') {
+        city = 'duhok';
+    } else if (city === 'زاخو') {
+        city = 'zakho';
+    }
+    // تحويل إلى أحرف صغيرة للتأكد من التوحيد
+    city = city.toLowerCase();
+    const phone = document.getElementById('personPhone').value;
     const directImageUrl = document.getElementById('directImageUrl').value;
     
-    if (!name || !job || !section || !directImageUrl) {
-        alert('يرجى ملء جميع الحقول بما في ذلك رابط الصورة');
+    if (!name || !job || !section || !city || !phone || !directImageUrl) {
+        alert('يرجى ملء جميع الحقول بما في ذلك المدينة ورقم الهاتف ورابط الصورة');
         return;
     }
     
@@ -1707,13 +1848,18 @@ async function handleAddPerson(e) {
             try {
                 // Add person to Firestore with a specific ID
                 const personId = `person_${timestamp}`;
+                // تأكد من تخزين المدينة بنفس التنسيق المستخدم في الاستعلام
                 const personData = {
                     name,
                     job,
                     section,
+                    city: city.toLowerCase(), // تحويل إلى أحرف صغيرة للتوحيد
+                    phone, // إضافة رقم الهاتف
                     image: imageUrl,
                     createdAt: timestamp
                 };
+                
+                console.log('بيانات الشخص المراد إضافته:', personData);
                 
                 console.log('جاري إضافة البيانات إلى Firestore:', personData);
                 
@@ -2133,6 +2279,14 @@ async function openEditPersonModal(personId, collectionName = 'persons') {
         document.getElementById('editPersonName').value = person.name;
         document.getElementById('editPersonJob').value = person.job;
         document.getElementById('editPersonSection').value = person.section;
+        // تعيين قيمة المدينة إذا كانت موجودة
+        if (document.getElementById('editPersonCity')) {
+            document.getElementById('editPersonCity').value = person.city || 'دهوك';
+        }
+        // تعيين قيمة رقم الهاتف إذا كانت موجودة
+        if (document.getElementById('editPersonPhone')) {
+            document.getElementById('editPersonPhone').value = person.phone || '';
+        }
         document.getElementById('currentPersonImage').src = convertImgBBUrl(person.image);
         document.getElementById('editPersonDirectImageUrl').value = person.image;
         
@@ -2156,12 +2310,25 @@ async function handleEditPerson(e) {
     const name = document.getElementById('editPersonName').value;
     const job = document.getElementById('editPersonJob').value;
     const section = document.getElementById('editPersonSection').value;
+    // تحويل المدينة إلى القيمة المناسبة للتخزين
+    let city = document.getElementById('editPersonCity') ? document.getElementById('editPersonCity').value : 'duhok';
+    // تحويل أسماء المدن العربية إلى الإنجليزية للتوحيد
+    if (city === 'دهوك') {
+        city = 'duhok';
+    } else if (city === 'زاخو') {
+        city = 'zakho';
+    }
+    // تحويل إلى أحرف صغيرة للتأكد من التوحيد
+    city = city.toLowerCase();
+    const phone = document.getElementById('editPersonPhone').value;
     const directImageUrl = document.getElementById('editPersonDirectImageUrl').value;
 
-    if (!name || !job || !section || !directImageUrl) {
-        alert('يرجى ملء جميع الحقول بما في ذلك رابط الصورة');
+    if (!name || !job || !section || !city || !phone || !directImageUrl) {
+        alert('يرجى ملء جميع الحقول بما في ذلك المدينة ورقم الهاتف ورابط الصورة');
         return;
     }
+    
+    console.log('بيانات الشخص المراد تعديله:', { name, job, section, city, directImageUrl });
     
     // التحقق من صحة رابط الصورة
     if (!isValidImageUrl(directImageUrl)) {
@@ -2250,10 +2417,20 @@ async function handleEditPerson(e) {
             return;
         }
         
+        // الحصول على قيمة المدينة من النموذج إذا كانت موجودة
+        const cityValue = document.getElementById('editPersonCity') ? document.getElementById('editPersonCity').value : 'دهوك';
+        // تحويل المدينة إلى أحرف صغيرة للتخزين
+        const city = cityValue.toLowerCase();
+        
+        // الحصول على قيمة رقم الهاتف من النموذج
+        const phone = document.getElementById('editPersonPhone') ? document.getElementById('editPersonPhone').value : '';
+        
         let updateData = {
             name,
             job,
             section,
+            city,
+            phone, // إضافة رقم الهاتف
             image: directImageUrl,
             updatedAt: new Date().getTime()
         };
@@ -2272,7 +2449,7 @@ async function handleEditPerson(e) {
             }
             
             const updatedData = docRef.data();
-            if (updatedData.name !== name || updatedData.job !== job || updatedData.section !== section) {
+            if (updatedData.name !== name || updatedData.job !== job || updatedData.section !== section || updatedData.city !== city) {
                 throw new Error('البيانات المحدثة غير متطابقة مع البيانات المدخلة');
             }
             
