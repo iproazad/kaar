@@ -1219,7 +1219,7 @@ async function loadPersons() {
         const user = auth.currentUser;
         console.log('حالة تسجيل الدخول عند تحميل الأشخاص:', user ? `مسجل الدخول (${user.uid})` : 'غير مسجل الدخول');
         
-        // عرض رسالة تحميل للزوار
+        // عرض رسالة تحميل للزوار مع تشجيعهم على التسجيل
         const personsGrid = document.getElementById('personsGrid');
         if (!user && personsGrid) {
             window.isVisitor = true; // تأكيد حالة الزائر
@@ -1228,9 +1228,26 @@ async function loadPersons() {
                     <div class="text-center">
                         <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
                         <p class="text-lg">جاري تحميل البطاقات في مدينة ${window.selectedCity === 'duhok' ? 'دهوك' : 'زاخو'}...</p>
+                        <div class="mt-4 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-sm rounded-xl border border-blue-500/20 shadow-lg">
+                            <p class="text-lg font-medium bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">قم بتسجيل الدخول للحصول على ميزات إضافية!</p>
+                            <p class="text-gray-600 dark:text-gray-300 mt-2">يمكنك تصفية البطاقات حسب المدينة والقسم بعد تسجيل الدخول</p>
+                            <button id="loginPromptBtn" class="mt-3 px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out">
+                                <i class="fas fa-sign-in-alt mr-2"></i> تسجيل الدخول
+                            </button>
+                        </div>
                     </div>
                 </div>
             `;
+            
+            // إضافة مستمع حدث لزر تسجيل الدخول
+            setTimeout(() => {
+                const loginPromptBtn = document.getElementById('loginPromptBtn');
+                if (loginPromptBtn) {
+                    loginPromptBtn.addEventListener('click', () => {
+                        document.getElementById('loginBtn').click();
+                    });
+                }
+            }, 500);
         }
         
         // متغيرات لتخزين دور المستخدم
@@ -1421,6 +1438,42 @@ async function loadPersons() {
                         console.log('لا توجد قيم مدينة محددة للزائر - سيتم عرض جميع البطاقات');
                     }
                     console.log('تم تعطيل فلتر المدينة للزوار للسماح بعرض جميع البطاقات');
+                    
+                    // إضافة رسالة للزوار بعد تحميل البطاقات
+                    setTimeout(() => {
+                        const personsGrid = document.getElementById('personsGrid');
+                        if (personsGrid && window.isVisitor) {
+                            // إضافة رسالة تشجيع للتسجيل في أعلى الشبكة
+                            const filterMessage = document.createElement('div');
+                            filterMessage.className = 'col-span-full mb-6 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-sm rounded-xl border border-blue-500/20 shadow-lg';
+                            filterMessage.innerHTML = `
+                                <div class="flex flex-col md:flex-row items-center justify-between">
+                                    <div class="mb-4 md:mb-0">
+                                        <p class="text-lg font-medium bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">تصفية متقدمة للبطاقات</p>
+                                        <p class="text-gray-600 dark:text-gray-300 mt-1">سجل دخولك للوصول إلى ميزة تصفية البطاقات حسب المدينة والقسم</p>
+                                    </div>
+                                    <button id="filterLoginBtn" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out">
+                                        <i class="fas fa-filter mr-2"></i> تسجيل الدخول للتصفية
+                                    </button>
+                                </div>
+                            `;
+                            
+                            // إضافة العنصر في بداية الشبكة
+                            if (personsGrid.firstChild) {
+                                personsGrid.insertBefore(filterMessage, personsGrid.firstChild);
+                            } else {
+                                personsGrid.appendChild(filterMessage);
+                            }
+                            
+                            // إضافة مستمع حدث لزر تسجيل الدخول
+                            const filterLoginBtn = document.getElementById('filterLoginBtn');
+                            if (filterLoginBtn) {
+                                filterLoginBtn.addEventListener('click', () => {
+                                    document.getElementById('loginBtn').click();
+                                });
+                            }
+                        }
+                    }, 1000); // تأخير لضمان تحميل البطاقات أولاً
                 } else if (queryConstraints.length > 0) {
                     // للمستخدمين المسجلين: تطبيق القيود العادية
                     for (const [field, operator, value] of queryConstraints) {

@@ -10,10 +10,10 @@
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <!-- تحسين التوافق مع الأجهزة المحمولة -->
-    <meta name="theme-color" content="#ffffff">
+    <meta name="theme-color" content="#1f2937">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <!-- التحقق من اختيار المدينة -->
     <script>
         // التحقق من اختيار المدينة عند تحميل الصفحة
@@ -26,39 +26,39 @@
         });
     </script>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+<body class="bg-gray-900 transition-colors duration-300" style="background-color: #111827; background-image: radial-gradient(at 10% 10%, rgba(59, 130, 246, 0.1) 0px, transparent 50%), radial-gradient(at 90% 90%, rgba(139, 92, 246, 0.1) 0px, transparent 50%); min-height: 100vh;">
     <!-- Header Section -->
-    <header class="bg-white dark:bg-gray-800 shadow-md">
+    <header class="bg-gray-800 shadow-md border-b border-gray-700 sticky top-0 z-50" style="backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);">
         <div class="container mx-auto px-4 py-4 flex justify-between items-center">
             <div class="flex items-center">
-                <h1 class="text-2xl font-bold text-gray-800 dark:text-white">kaar</h1>
-                <div id="cityIndicator" class="mr-4 px-3 py-1 rounded-full text-sm font-medium"></div>
+                <h1 class="text-2xl font-bold" style="background: linear-gradient(90deg, #2563eb, #8b5cf6); -webkit-background-clip: text; background-clip: text; color: transparent;">kaar</h1>
+                <div id="cityIndicator" class="mr-4 px-3 py-1 rounded-full text-sm font-medium bg-opacity-20 bg-blue-500 text-blue-300"></div>
             </div>
             <div class="flex items-center space-x-4 space-x-reverse">
                 <!-- Search Bar -->
                 <div class="relative">
-                    <input type="text" id="searchInput" placeholder="ابحث عن شخص..." class="bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 rounded-lg px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 w-64">
-                    <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                    <input type="text" id="searchInput" placeholder="ابحث عن شخص..." class="bg-gray-700 text-gray-200 rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 w-64 transition-all duration-300">
+                    <i class="fas fa-search absolute left-3 top-3 text-blue-400"></i>
                 </div>
                 <!-- Dark Mode Toggle - مخفي لأن الوضع الداكن مفعل بشكل دائم -->
-                <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 hidden">
-                    <i class="fas fa-moon text-gray-600 dark:text-gray-300 dark:hidden"></i>
+                <button id="darkModeToggle" class="p-2 rounded-full hover:bg-gray-700 hidden">
+                    <i class="fas fa-moon text-gray-300 dark:hidden"></i>
                     <i class="fas fa-sun text-yellow-400 hidden dark:block"></i>
                 </button>
                 <!-- Login Button (visible to all) -->
-                <button id="loginBtn" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300 shadow-md">
+                <button id="loginBtn" class="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white px-4 py-2 rounded-lg transition duration-300 shadow-lg">
                     <i class="fas fa-sign-in-alt ml-2"></i><span>تسجيل الدخول</span>
                 </button>
                 <!-- Register Button (visible to all) -->
-                <button id="registerBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300 shadow-md">
+                <button id="registerBtn" class="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white px-4 py-2 rounded-lg transition duration-300 shadow-lg">
                     <i class="fas fa-user-plus ml-2"></i><span>تسجيل</span>
                 </button>
                 <!-- Admin Dashboard Button (initially hidden, shown after login) -->
-                <button id="dashboardBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300 hidden shadow-md">
+                <button id="dashboardBtn" class="bg-gradient-to-r from-purple-600 to-purple-800 hover:from-purple-700 hover:to-purple-900 text-white px-4 py-2 rounded-lg transition duration-300 hidden shadow-lg">
                     <i class="fas fa-tachometer-alt ml-2"></i><span>لوحة التحكم</span>
                 </button>
                 <!-- Logout Button (initially hidden, shown after login) -->
-                <button id="logoutBtn" class="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg transition duration-300 hidden shadow-md">
+                <button id="logoutBtn" class="bg-gradient-to-r from-red-600 to-red-800 hover:from-red-700 hover:to-red-900 text-white px-4 py-2 rounded-lg transition duration-300 hidden shadow-lg">
                     <i class="fas fa-sign-out-alt ml-2"></i><span>تسجيل الخروج</span>
                 </button>
             </div>
@@ -66,71 +66,97 @@
     </header>
 
     <!-- Main Navigation -->
-    <nav class="bg-white dark:bg-gray-800 shadow-sm mb-6">
+    <nav class="bg-gray-800 shadow-sm mb-6 border-b border-gray-700">
         <div class="container mx-auto px-4">
             <ul class="flex space-x-8 space-x-reverse">
-                <li><a href="#" class="block py-4 px-2 text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 font-medium">الرئيسية</a></li>
-                <li><a href="#" class="block py-4 px-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition duration-300">الأقسام</a></li>
-                <li><a href="#" class="block py-4 px-2 text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition duration-300">عن المنصة</a></li>
+                <li><a href="#" class="block py-4 px-2 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-blue-600 border-b-2 border-blue-500 font-medium relative overflow-hidden">الرئيسية</a></li>
+                <li><a href="#" class="block py-4 px-2 text-gray-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-600 transition duration-300">الأقسام</a></li>
+                <li><a href="#" class="block py-4 px-2 text-gray-300 hover:text-transparent hover:bg-clip-text hover:bg-gradient-to-r hover:from-blue-400 hover:to-blue-600 transition duration-300">عن المنصة</a></li>
             </ul>
         </div>
     </nav>
 
     <!-- Category Filter -->
-    <div class="container mx-auto px-4 mb-6">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-sm p-4">
-            <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">تصفية حسب القسم</h3>
-            <div id="categoryFilters" class="flex flex-wrap gap-2">
+    <div class="container mx-auto px-4 mb-8">
+        <div class="bg-gray-800 bg-opacity-80 rounded-xl shadow-lg p-6 border border-gray-700" style="backdrop-filter: blur(10px);">
+            <h3 class="text-xl font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-4">تصفية حسب القسم</h3>
+            <div id="categoryFilters" class="flex flex-wrap gap-3">
                 <!-- Categories will be loaded dynamically here -->
-                <button class="category-filter active bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-lg transition duration-300" data-category="all">الكل</button>
+                <button class="category-filter active bg-gradient-to-r from-blue-600 to-blue-800 text-white px-5 py-2 rounded-lg transition-all duration-300 shadow-md hover:shadow-blue-500/20 hover:shadow-lg" data-category="all">الكل</button>
+                <button class="category-filter bg-gray-700 hover:bg-gradient-to-r hover:from-blue-600 hover:to-blue-800 text-gray-300 hover:text-white px-5 py-2 rounded-lg transition-all duration-300 shadow-md" data-category="other">أخرى</button>
             </div>
         </div>
     </div>
 
     <!-- Main Content -->
-    <main class="container mx-auto px-4 pb-12">
+    <main class="container mx-auto px-4 pb-16">
         <!-- Persons Grid -->
-        <div id="personsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
+        <div id="personsGrid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
             <!-- Person cards will be loaded dynamically here -->
             <!-- Loading Placeholder -->
-            <div class="animate-pulse bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center">
-                <div class="rounded-full bg-gray-300 dark:bg-gray-600 h-32 w-32 mb-4"></div>
-                <div class="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4 mb-2"></div>
-                <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/2 mb-2"></div>
-                <div class="h-3 bg-gray-300 dark:bg-gray-600 rounded w-1/4"></div>
+            <div class="animate-pulse bg-gray-800 bg-opacity-80 rounded-xl shadow-lg p-6 flex flex-col items-center border border-gray-700" style="backdrop-filter: blur(5px);">
+                <div class="rounded-full bg-gray-700 h-32 w-32 mb-6 ring-4 ring-blue-500 ring-opacity-30"></div>
+                <div class="h-5 bg-gray-700 rounded-full w-3/4 mb-3"></div>
+                <div class="h-4 bg-gray-700 rounded-full w-1/2 mb-3"></div>
+                <div class="h-4 bg-gray-700 rounded-full w-2/3"></div>
             </div>
         </div>
     </main>
 
     <!-- Login Modal -->
-    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800 dark:text-white">تسجيل الدخول</h2>
-                <button id="closeLoginModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+    <div id="loginModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden backdrop-blur-sm transition-all duration-300">
+        <div class="bg-gray-800 bg-opacity-90 rounded-xl shadow-2xl p-8 w-full max-w-md border border-gray-700 transform transition-all duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">تسجيل الدخول</h2>
+                <button id="closeLoginModal" class="text-gray-400 hover:text-white transition-colors duration-300 bg-gray-700 hover:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
-            <form id="loginForm">
-                <div class="mb-4">
-                    <label for="email" class="block text-gray-700 dark:text-gray-300 mb-2">البريد الإلكتروني</label>
-                    <input type="email" id="email" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+            <form id="loginForm" class="space-y-6">
+                <div class="form-group">
+                    <label for="email" class="block text-gray-300 mb-2 text-sm">البريد الإلكتروني</label>
+                    <div class="relative">
+                        <i class="fas fa-envelope absolute right-3 top-3 text-gray-500"></i>
+                        <input type="email" id="email" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                    </div>
                 </div>
-                <div class="mb-6">
-                    <label for="password" class="block text-gray-700 dark:text-gray-300 mb-2">كلمة المرور</label>
-                    <input type="password" id="password" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                <div class="form-group">
+                    <div class="flex justify-between mb-2">
+                        <label for="password" class="block text-gray-300 text-sm">كلمة المرور</label>
+                        <a href="#" class="text-sm text-blue-400 hover:text-blue-300 transition-colors duration-300">نسيت كلمة المرور؟</a>
+                    </div>
+                    <div class="relative">
+                        <i class="fas fa-lock absolute right-3 top-3 text-gray-500"></i>
+                        <input type="password" id="password" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                    </div>
                 </div>
-                <button type="submit" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">تسجيل الدخول</button>
+                <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-lg relative overflow-hidden">
+                    <span class="relative z-10">تسجيل الدخول</span>
+                </button>
+                <div class="text-center mt-4">
+                    <p class="text-gray-400 mb-4">أو تسجيل الدخول باستخدام</p>
+                    <div class="flex justify-center space-x-4 space-x-reverse">
+                        <button type="button" class="bg-gray-700 hover:bg-gray-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300">
+                            <i class="fab fa-google"></i>
+                        </button>
+                        <button type="button" class="bg-gray-700 hover:bg-gray-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300">
+                            <i class="fab fa-facebook-f"></i>
+                        </button>
+                        <button type="button" class="bg-gray-700 hover:bg-gray-600 text-white w-10 h-10 rounded-full flex items-center justify-center transition-all duration-300">
+                            <i class="fab fa-twitter"></i>
+                        </button>
+                    </div>
+                </div>
             </form>
         </div>
     </div>
 
     <!-- User Profile Modal -->
-    <div id="userProfileModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-4xl">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800 dark:text-white">الملف الشخصي</h2>
-                <button id="closeUserProfileModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+    <div id="userProfileModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden backdrop-blur-sm transition-all duration-300">
+        <div class="bg-gray-800 bg-opacity-90 rounded-xl shadow-2xl p-8 w-full max-w-4xl border border-gray-700 transform transition-all duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">الملف الشخصي</h2>
+                <button id="closeUserProfileModal" class="text-gray-400 hover:text-white transition-colors duration-300 bg-gray-700 hover:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
@@ -139,40 +165,56 @@
                 <!-- User profile content will be loaded here -->
                 <div class="flex flex-col md:flex-row gap-6">
                     <div class="md:w-1/3">
-                        <div class="bg-gray-100 dark:bg-gray-700 rounded-lg p-4 text-center">
-                            <img id="userProfileImage" src="" alt="صورة المستخدم" class="w-32 h-32 rounded-full mx-auto mb-4 object-cover">
-                            <h3 id="userProfileName" class="text-lg font-bold text-gray-800 dark:text-white mb-1"></h3>
-                            <p id="userProfileJob" class="text-gray-600 dark:text-gray-300 mb-2"></p>
-                            <p id="userProfileSection" class="text-gray-600 dark:text-gray-300 mb-4"></p>
-                            <button id="editUserProfileBtn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300 w-full">
-                                <i class="fas fa-edit ml-1"></i>
+                        <div class="bg-gray-700 rounded-xl p-6 text-center border border-gray-600">
+                            <div class="relative w-32 h-32 mx-auto mb-4">
+                                <div class="absolute inset-0 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 p-1">
+                                    <img id="userProfileImage" src="" alt="صورة المستخدم" class="w-full h-full rounded-full object-cover border-2 border-gray-800">
+                                </div>
+                            </div>
+                            <h3 id="userProfileName" class="text-xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-1"></h3>
+                            <p id="userProfileJob" class="text-gray-300 mb-2"></p>
+                            <p id="userProfileSection" class="text-gray-400 bg-gray-800 px-3 py-1 rounded-full text-sm inline-block mb-4"></p>
+                            <button id="editUserProfileBtn" class="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-bold py-2 px-4 rounded-lg transition duration-300 w-full shadow-lg">
+                                <i class="fas fa-edit ml-2"></i>
                                 تعديل البيانات
                             </button>
                         </div>
                     </div>
                     <div class="md:w-2/3">
-                        <form id="editUserProfileForm" class="hidden space-y-4">
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 mb-2">الاسم</label>
-                                <input type="text" id="editUserName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        <form id="editUserProfileForm" class="hidden space-y-5">
+                            <div class="form-group">
+                                <label class="block text-gray-300 mb-2 text-sm">الاسم</label>
+                                <div class="relative">
+                                    <i class="fas fa-user absolute right-3 top-3 text-gray-500"></i>
+                                    <input type="text" id="editUserName" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 mb-2">الوظيفة</label>
-                                <input type="text" id="editUserJob" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <div class="form-group">
+                                <label class="block text-gray-300 mb-2 text-sm">الوظيفة</label>
+                                <div class="relative">
+                                    <i class="fas fa-briefcase absolute right-3 top-3 text-gray-500"></i>
+                                    <input type="text" id="editUserJob" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 mb-2">القسم</label>
-                                <select id="editUserSection" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
-                                    <!-- Sections will be loaded dynamically here -->
-                                </select>
+                            <div class="form-group">
+                                <label class="block text-gray-300 mb-2 text-sm">القسم</label>
+                                <div class="relative">
+                                    <i class="fas fa-building absolute right-3 top-3 text-gray-500"></i>
+                                    <select id="editUserSection" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                                        <!-- Sections will be loaded dynamically here -->
+                                    </select>
+                                </div>
                             </div>
-                            <div>
-                                <label class="block text-gray-700 dark:text-gray-300 mb-2">رابط الصورة</label>
-                                <input type="text" id="editUserImageUrl" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <div class="form-group">
+                                <label class="block text-gray-300 mb-2 text-sm">رابط الصورة</label>
+                                <div class="relative">
+                                    <i class="fas fa-image absolute right-3 top-3 text-gray-500"></i>
+                                    <input type="text" id="editUserImageUrl" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                                </div>
                             </div>
-                            <div class="flex justify-end space-x-4 space-x-reverse">
-                                <button type="button" id="cancelEditUserProfile" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-2 px-4 rounded-lg transition duration-300">إلغاء</button>
-                                <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">حفظ التغييرات</button>
+                            <div class="flex justify-end space-x-4 space-x-reverse mt-6">
+                                <button type="button" id="cancelEditUserProfile" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition duration-300">إلغاء</button>
+                                <button type="submit" class="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-lg">حفظ التغييرات</button>
                             </div>
                         </form>
                     </div>
@@ -182,26 +224,26 @@
     </div>
 
     <!-- Admin Dashboard (initially hidden) -->
-    <div id="adminDashboard" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-4xl h-5/6 overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800 dark:text-white">لوحة التحكم</h2>
-                <button id="closeAdminDashboard" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+    <div id="adminDashboard" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden backdrop-blur-sm transition-all duration-300">
+        <div class="bg-gray-800 bg-opacity-90 rounded-xl shadow-2xl p-8 w-full max-w-4xl h-5/6 overflow-y-auto border border-gray-700 transform transition-all duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">لوحة التحكم</h2>
+                <button id="closeAdminDashboard" class="text-gray-400 hover:text-white transition-colors duration-300 bg-gray-700 hover:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
             <!-- Admin Tabs -->
-            <div class="mb-6 border-b dark:border-gray-700">
+            <div class="mb-6 border-b border-gray-600">
                 <ul class="flex flex-wrap -mb-px text-sm font-medium text-center">
                     <li class="ml-2">
-                        <button class="admin-tab active inline-block p-4 border-b-2 border-blue-600 rounded-t-lg" data-tab="persons">إدارة الأشخاص</button>
+                        <button class="admin-tab active inline-block p-4 border-b-2 border-blue-500 rounded-t-lg text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500" data-tab="persons">إدارة الأشخاص</button>
                     </li>
                     <li class="ml-2">
-                        <button class="admin-tab inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="sections">إدارة الأقسام</button>
+                        <button class="admin-tab inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-blue-400 hover:border-blue-400 text-gray-300" data-tab="sections">إدارة الأقسام</button>
                     </li>
                     <li class="ml-2">
-                        <button class="admin-tab inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-gray-600 hover:border-gray-300" data-tab="admins">إدارة الحسابات</button>
+                        <button class="admin-tab inline-block p-4 border-b-2 border-transparent rounded-t-lg hover:text-blue-400 hover:border-blue-400 text-gray-300" data-tab="admins">إدارة الحسابات</button>
                     </li>
                 </ul>
             </div>
@@ -209,49 +251,67 @@
             <!-- Persons Tab Content -->
             <div id="personsTab" class="admin-tab-content">
                 <div class="mb-6">
-                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">إضافة شخص جديد</h3>
+                    <h3 class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">إضافة شخص جديد</h3>
                     <form id="addPersonForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">الاسم</label>
-                            <input type="text" id="personName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <label class="block text-gray-300 mb-2 text-sm">الاسم</label>
+                            <div class="relative">
+                                <i class="fas fa-user absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="personName" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">الوظيفة</label>
-                            <input type="text" id="personJob" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <label class="block text-gray-300 mb-2 text-sm">الوظيفة</label>
+                            <div class="relative">
+                                <i class="fas fa-briefcase absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="personJob" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">القسم</label>
-                            <select id="personSection" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
-                                <!-- Sections will be loaded dynamically here -->
-                            </select>
+                            <label class="block text-gray-300 mb-2 text-sm">القسم</label>
+                            <div class="relative">
+                                <i class="fas fa-building absolute right-3 top-3 text-gray-500"></i>
+                                <select id="personSection" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                                    <!-- Sections will be loaded dynamically here -->
+                                </select>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">المدينة</label>
-                            <select id="personCity" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
-                                <option value="دهوك">دهوك</option>
-                                <option value="زاخو">زاخو</option>
-                            </select>
+                            <label class="block text-gray-300 mb-2 text-sm">المدينة</label>
+                            <div class="relative">
+                                <i class="fas fa-map-marker-alt absolute right-3 top-3 text-gray-500"></i>
+                                <select id="personCity" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                                    <option value="دهوك">دهوك</option>
+                                    <option value="زاخو">زاخو</option>
+                                </select>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">رقم الهاتف</label>
-                            <input type="tel" id="personPhone" placeholder="07xxxxxxxx" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <label class="block text-gray-300 mb-2 text-sm">رقم الهاتف</label>
+                            <div class="relative">
+                                <i class="fas fa-phone absolute right-3 top-3 text-gray-500"></i>
+                                <input type="tel" id="personPhone" placeholder="07xxxxxxxx" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">رابط الصورة</label>
-                            <input type="text" id="directImageUrl" placeholder="https://ibb.co/0jsTLgnm" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">يمكنك إدخال رابط صفحة عرض الصورة من ImgBB مثل https://ibb.co/0jsTLgnm أو رابط مباشر للصورة ينتهي بامتداد الصورة مثل .jpg أو .png. <a href="imgbb_guide.html" target="_blank" class="text-blue-500 hover:underline">شاهد الدليل المصور</a></p>
+                            <label class="block text-gray-300 mb-2 text-sm">رابط الصورة</label>
+                            <div class="relative">
+                                <i class="fas fa-image absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="directImageUrl" placeholder="https://ibb.co/0jsTLgnm" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
+                            <p class="text-sm text-gray-400 mt-1">يمكنك إدخال رابط صفحة عرض الصورة من ImgBB مثل https://ibb.co/0jsTLgnm أو رابط مباشر للصورة ينتهي بامتداد الصورة مثل .jpg أو .png. <a href="imgbb_guide.html" target="_blank" class="text-blue-400 hover:underline">شاهد الدليل المصور</a></p>
                         </div>
                         <div class="md:col-span-2">
-                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">إضافة شخص</button>
+                            <button type="submit" class="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-lg">إضافة شخص</button>
                         </div>
                     </form>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">قائمة الأشخاص</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <h3 class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">قائمة الأشخاص</h3>
+                    <div class="overflow-x-auto rounded-xl">
+                        <table class="w-full text-sm text-right text-gray-400 bg-gray-700 rounded-xl overflow-hidden border border-gray-600">
+                            <thead class="text-xs uppercase bg-gray-800 text-gray-300">
                                 <tr>
                                     <th scope="col" class="px-6 py-3">الصورة</th>
                                     <th scope="col" class="px-6 py-3">الاسم</th>
@@ -261,7 +321,7 @@
                                     <th scope="col" class="px-6 py-3">الإجراءات</th>
                                 </tr>
                             </thead>
-                            <tbody id="personsTableBody">
+                            <tbody id="personsTableBody" class="divide-y divide-gray-600">
                                 <!-- Persons will be loaded dynamically here -->
                             </tbody>
                         </table>
@@ -272,34 +332,40 @@
             <!-- Sections Tab Content -->
             <div id="sectionsTab" class="admin-tab-content hidden">
                 <div class="mb-6">
-                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">إضافة قسم جديد</h3>
+                    <h3 class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">إضافة قسم جديد</h3>
                     <form id="addSectionForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">اسم القسم</label>
-                            <input type="text" id="sectionName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <label class="block text-gray-300 mb-2 text-sm">اسم القسم</label>
+                            <div class="relative">
+                                <i class="fas fa-folder absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="sectionName" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">وصف القسم</label>
-                            <input type="text" id="sectionDescription" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <label class="block text-gray-300 mb-2 text-sm">وصف القسم</label>
+                            <div class="relative">
+                                <i class="fas fa-info-circle absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="sectionDescription" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
                         <div class="md:col-span-2">
-                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">إضافة قسم</button>
+                            <button type="submit" class="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-lg">إضافة قسم</button>
                         </div>
                     </form>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">قائمة الأقسام</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <h3 class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">قائمة الأقسام</h3>
+                    <div class="overflow-x-auto rounded-xl">
+                        <table class="w-full text-sm text-right text-gray-400 bg-gray-700 rounded-xl overflow-hidden border border-gray-600">
+                            <thead class="text-xs uppercase bg-gray-800 text-gray-300">
                                 <tr>
                                     <th scope="col" class="px-6 py-3">اسم القسم</th>
                                     <th scope="col" class="px-6 py-3">الوصف</th>
                                     <th scope="col" class="px-6 py-3">الإجراءات</th>
                                 </tr>
                             </thead>
-                            <tbody id="sectionsTableBody">
+                            <tbody id="sectionsTableBody" class="divide-y divide-gray-600">
                                 <!-- Sections will be loaded dynamically here -->
                             </tbody>
                         </table>
@@ -310,44 +376,111 @@
             <!-- Admins Tab Content -->
             <div id="adminsTab" class="admin-tab-content hidden">
                 <div class="mb-6">
-                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">إضافة مسؤول جديد</h3>
+                    <h3 class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">إضافة مسؤول جديد</h3>
                     <form id="addAdminForm" class="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">البريد الإلكتروني</label>
-                            <input type="email" id="adminEmail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <label class="block text-gray-300 mb-2 text-sm">البريد الإلكتروني</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute right-3 top-3 text-gray-500"></i>
+                                <input type="email" id="adminEmail" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">كلمة المرور</label>
-                            <input type="password" id="adminPassword" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                            <label class="block text-gray-300 mb-2 text-sm">كلمة المرور</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute right-3 top-3 text-gray-500"></i>
+                                <input type="password" id="adminPassword" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
                         <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">الدور</label>
-                            <select id="adminRole" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
-                                <option value="admin">مسؤول</option>
-                                <option value="superadmin">مسؤول رئيسي</option>
-                            </select>
+                            <label class="block text-gray-300 mb-2 text-sm">الدور</label>
+                            <div class="relative">
+                                <i class="fas fa-user-shield absolute right-3 top-3 text-gray-500"></i>
+                                <select id="adminRole" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                                    <option value="admin">مسؤول</option>
+                                    <option value="superadmin">مسؤول رئيسي</option>
+                                </select>
+                            </div>
                         </div>
                         <div class="md:col-span-2">
-                            <button type="submit" class="bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">إضافة مسؤول</button>
+                            <button type="submit" class="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-lg">إضافة مسؤول</button>
                         </div>
                     </form>
                 </div>
                 
                 <div>
-                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">قائمة المسؤولين</h3>
-                    <div class="overflow-x-auto">
-                        <table class="w-full text-sm text-right text-gray-500 dark:text-gray-400">
-                            <thead class="text-xs text-gray-700 uppercase bg-gray-50 dark:bg-gray-700 dark:text-gray-400">
+                    <h3 class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">قائمة المسؤولين</h3>
+                    <div class="overflow-x-auto rounded-xl">
+                        <table class="w-full text-sm text-right text-gray-400 bg-gray-700 rounded-xl overflow-hidden border border-gray-600">
+                            <thead class="text-xs uppercase bg-gray-800 text-gray-300">
                                 <tr>
                                     <th scope="col" class="px-6 py-3">البريد الإلكتروني</th>
                                     <th scope="col" class="px-6 py-3">الدور</th>
                                     <th scope="col" class="px-6 py-3">الإجراءات</th>
                                 </tr>
                             </thead>
-                            <tbody id="adminsTableBody">
+                            <tbody id="adminsTableBody" class="divide-y divide-gray-600">
                                 <!-- Admins will be loaded dynamically here -->
                             </tbody>
                         </table>
+                    </div>
+                </div>
+                
+                <!-- Cities Tab Content -->
+                <div class="mt-10">
+                    <div class="flex justify-between mb-6">
+                        <h3 class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">قائمة المدن</h3>
+                        <button id="addCityBtn" class="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-lg flex items-center">
+                            <i class="fas fa-plus ml-2"></i> إضافة مدينة
+                        </button>
+                    </div>
+                    <div class="overflow-x-auto rounded-xl">
+                        <table class="min-w-full bg-gray-700 rounded-xl overflow-hidden border border-gray-600">
+                            <thead class="bg-gray-800">
+                                <tr>
+                                    <th class="py-3 px-4 text-right text-gray-300 font-semibold">اسم المدينة</th>
+                                    <th class="py-3 px-4 text-right text-gray-300 font-semibold">الإجراءات</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminCitiesList" class="divide-y divide-gray-600">
+                                <!-- Cities will be loaded here -->
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <!-- Add City Form -->
+                    <div id="addCityForm" class="mt-8 hidden bg-gray-700 p-6 rounded-xl border border-gray-600">
+                        <h4 class="text-md font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-4">إضافة مدينة جديدة</h4>
+                        <form id="newCityForm" class="flex items-center">
+                            <div class="relative flex-grow ml-3">
+                                <i class="fas fa-city absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="newCityName" class="w-full px-4 py-3 pr-10 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-700 text-white transition-all duration-300" placeholder="اسم المدينة" required>
+                            </div>
+                            <button type="submit" class="bg-gradient-to-r from-green-600 to-green-800 hover:from-green-700 hover:to-green-900 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-lg ml-2">
+                                <i class="fas fa-save ml-2"></i> حفظ
+                            </button>
+                            <button type="button" id="cancelAddCity" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                                <i class="fas fa-times ml-2"></i> إلغاء
+                            </button>
+                        </form>
+                    </div>
+                    
+                    <!-- Edit City Form -->
+                    <div id="editCityForm" class="mt-8 hidden bg-gray-700 p-6 rounded-xl border border-gray-600">
+                        <h4 class="text-md font-semibold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-4">تعديل المدينة</h4>
+                        <form id="updateCityForm" class="flex items-center">
+                            <input type="hidden" id="editCityId">
+                            <div class="relative flex-grow ml-3">
+                                <i class="fas fa-city absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="editCityName" class="w-full px-4 py-3 pr-10 bg-gray-600 border border-gray-500 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-700 text-white transition-all duration-300" placeholder="اسم المدينة" required>
+                            </div>
+                            <button type="submit" class="bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-bold py-2 px-4 rounded-lg transition duration-300 shadow-lg ml-2">
+                                <i class="fas fa-save ml-2"></i> تحديث
+                            </button>
+                            <button type="button" id="cancelEditCity" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-lg transition duration-300">
+                                <i class="fas fa-times ml-2"></i> إلغاء
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
@@ -427,59 +560,79 @@
     </div>
 
     <!-- Register Modal -->
-    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 hidden">
-        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-4xl h-5/6 overflow-y-auto">
-            <div class="flex justify-between items-center mb-4">
-                <h2 class="text-xl font-bold text-gray-800 dark:text-white">تسجيل حساب جديد</h2>
-                <button id="closeRegisterModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100">
+    <div id="registerModal" class="fixed inset-0 bg-black bg-opacity-70 flex items-center justify-center z-50 hidden backdrop-blur-sm transition-all duration-300">
+        <div class="bg-gray-800 bg-opacity-90 rounded-xl shadow-2xl p-8 w-full max-w-4xl h-5/6 overflow-y-auto border border-gray-700 transform transition-all duration-300">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">تسجيل حساب جديد</h2>
+                <button id="closeRegisterModal" class="text-gray-400 hover:text-white transition-colors duration-300 bg-gray-700 hover:bg-gray-600 rounded-full w-8 h-8 flex items-center justify-center">
                     <i class="fas fa-times"></i>
                 </button>
             </div>
             
             <form id="registerForm" class="space-y-6">
                 <!-- Account Information Section -->
-                <div class="border-b dark:border-gray-700 pb-6">
-                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">معلومات الحساب</h3>
+                <div class="border-b border-gray-700 pb-6">
+                    <h3 class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">معلومات الحساب</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">البريد الإلكتروني</label>
-                            <input type="email" id="registerEmail" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        <div class="form-group">
+                            <label class="block text-gray-300 mb-2 text-sm">البريد الإلكتروني</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute right-3 top-3 text-gray-500"></i>
+                                <input type="email" id="registerEmail" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">كلمة المرور</label>
-                            <input type="password" id="registerPassword" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        <div class="form-group">
+                            <label class="block text-gray-300 mb-2 text-sm">كلمة المرور</label>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute right-3 top-3 text-gray-500"></i>
+                                <input type="password" id="registerPassword" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
                     </div>
                 </div>
                 
                 <!-- Personal Information Section -->
                 <div id="personalInfoSection">
-                    <h3 class="text-lg font-medium text-gray-800 dark:text-white mb-3">المعلومات الشخصية</h3>
+                    <h3 class="text-lg font-medium text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500 mb-3">المعلومات الشخصية</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">الاسم</label>
-                            <input type="text" id="registerName" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        <div class="form-group">
+                            <label class="block text-gray-300 mb-2 text-sm">الاسم</label>
+                            <div class="relative">
+                                <i class="fas fa-user absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="registerName" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">الوظيفة</label>
-                            <input type="text" id="registerJob" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
+                        <div class="form-group">
+                            <label class="block text-gray-300 mb-2 text-sm">الوظيفة</label>
+                            <div class="relative">
+                                <i class="fas fa-briefcase absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="registerJob" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">القسم</label>
-                            <select id="registerSection" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
-                                <!-- Sections will be loaded dynamically here -->
-                            </select>
+                        <div class="form-group">
+                            <label class="block text-gray-300 mb-2 text-sm">القسم</label>
+                            <div class="relative">
+                                <i class="fas fa-building absolute right-3 top-3 text-gray-500"></i>
+                                <select id="registerSection" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                                    <!-- Sections will be loaded dynamically here -->
+                                </select>
+                            </div>
                         </div>
-                        <div>
-                            <label class="block text-gray-700 dark:text-gray-300 mb-2">رابط الصورة</label>
-                            <input type="text" id="registerImageUrl" placeholder="https://ibb.co/0jsTLgnm" class="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white" required>
-                            <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">يمكنك إدخال رابط صفحة عرض الصورة من ImgBB مثل https://ibb.co/0jsTLgnm أو رابط مباشر للصورة ينتهي بامتداد الصورة مثل .jpg أو .png. <a href="imgbb_guide.html" target="_blank" class="text-blue-500 hover:underline">شاهد الدليل المصور</a></p>
+                        <div class="form-group">
+                            <label class="block text-gray-300 mb-2 text-sm">رابط الصورة</label>
+                            <div class="relative">
+                                <i class="fas fa-image absolute right-3 top-3 text-gray-500"></i>
+                                <input type="text" id="registerImageUrl" placeholder="https://ibb.co/0jsTLgnm" class="w-full px-4 py-3 pr-10 bg-gray-700 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:bg-gray-600 text-white transition-all duration-300" required>
+                            </div>
+                            <p class="text-sm text-gray-400 mt-1">يمكنك إدخال رابط صفحة عرض الصورة من ImgBB مثل https://ibb.co/0jsTLgnm أو رابط مباشر للصورة ينتهي بامتداد الصورة مثل .jpg أو .png. <a href="imgbb_guide.html" target="_blank" class="text-blue-400 hover:underline">شاهد الدليل المصور</a></p>
                         </div>
                     </div>
                 </div>
                 
                 <div class="pt-4">
-                    <button type="submit" class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-2 px-4 rounded-lg transition duration-300">تسجيل الحساب</button>
+                    <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-blue-800 hover:from-blue-700 hover:to-blue-900 text-white font-bold py-3 px-4 rounded-lg transition duration-300 shadow-lg relative overflow-hidden">
+                        <span class="relative z-10">تسجيل الحساب</span>
+                    </button>
                 </div>
             </form>
         </div>
