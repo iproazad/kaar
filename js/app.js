@@ -157,6 +157,24 @@ function applyCardStyles() {
 function initApp() {
     console.log('بدء تهيئة التطبيق...');
     
+    // إضافة أنماط CSS للرسوم المتحركة
+    if (!document.getElementById('animation-styles')) {
+        const styleElement = document.createElement('style');
+        styleElement.id = 'animation-styles';
+        styleElement.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; transform: translateY(0); }
+                to { opacity: 0; transform: translateY(10px); }
+            }
+        `;
+        document.head.appendChild(styleElement);
+        console.log('تمت إضافة أنماط الرسوم المتحركة');
+    }
+    
     // إضافة meta viewport tag للتأكد من عرض التطبيق بشكل صحيح على الأجهزة المحمولة
     const viewportMeta = document.querySelector('meta[name="viewport"]');
     if (!viewportMeta) {
@@ -169,6 +187,7 @@ function initApp() {
     
     // التحقق من المدينة المختارة وعرضها
     const selectedCity = localStorage.getItem('selectedCity') || 'duhok';
+    window.selectedCity = selectedCity; // تهيئة المتغير العام
     updateCityIndicator(selectedCity);
     console.log('المدينة المختارة:', selectedCity);
     // تأكد من تخزين المدينة بأحرف صغيرة في localStorage
@@ -199,8 +218,11 @@ function initApp() {
 function updateCityIndicator(city) {
     const cityIndicator = document.getElementById('cityIndicator');
     if (cityIndicator) {
+        // تحديث المتغير العام للمدينة المحددة
+        window.selectedCity = city || localStorage.getItem('selectedCity') || 'duhok';
+        
         // تحويل المدينة إلى أحرف صغيرة للمقارنة
-        const normalizedCity = city.toLowerCase();
+        const normalizedCity = window.selectedCity.toLowerCase();
         
         if (normalizedCity === 'duhok' || normalizedCity === 'دهوك') {
             cityIndicator.textContent = 'مدينة دهوك';
@@ -209,6 +231,104 @@ function updateCityIndicator(city) {
             cityIndicator.textContent = 'مدينة زاخو';
             cityIndicator.className = 'mr-4 px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
         }
+    }
+}
+
+// دالة إضافة فلتر المدينة لجميع المستخدمين (الزوار والمسجلين)
+function addCityFilterForAll() {
+    // التحقق من وجود عنصر فلتر المدينة مسبقًا
+    if (document.getElementById('cityFilter')) {
+        return; // إذا كان موجودًا بالفعل، لا نضيفه مرة أخرى
+    }
+    
+    // إنشاء عنصر فلتر المدينة
+    const cityFilter = document.createElement('div');
+    cityFilter.id = 'cityFilter';
+    cityFilter.className = 'bg-white dark:bg-gray-800 p-4 mb-6 rounded-lg shadow-md';
+    
+    // الحصول على المدينة المحددة حاليًا
+    const selectedCity = localStorage.getItem('selectedCity') || 'duhok';
+    
+    // إنشاء محتوى فلتر المدينة
+    cityFilter.innerHTML = `
+        <div class="flex items-center justify-between mb-3">
+            <h3 class="text-lg font-bold text-gray-800 dark:text-gray-200">فلتر حسب المدينة</h3>
+            ${window.isVisitor ? '<span class="text-sm text-blue-600 dark:text-blue-400"><i class="fas fa-info-circle ml-1"></i>متاح للزوار</span>' : ''}
+        </div>
+        <div class="flex flex-wrap gap-2">
+            <button class="city-filter px-4 py-2 rounded-lg transition duration-300 ${selectedCity.toLowerCase() === 'duhok' || selectedCity.toLowerCase() === 'دهوك' ? 'active bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}" data-city="duhok">دهوك</button>
+            <button class="city-filter px-4 py-2 rounded-lg transition duration-300 ${selectedCity.toLowerCase() === 'zakho' || selectedCity.toLowerCase() === 'زاخو' ? 'active bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200'}" data-city="zakho">زاخو</button>
+        </div>
+    `;
+    
+    // إضافة فلتر المدينة قبل شبكة الأشخاص
+    const personsGrid = document.getElementById('personsGrid');
+    if (personsGrid && personsGrid.parentNode) {
+        personsGrid.parentNode.insertBefore(cityFilter, personsGrid);
+        
+        // إضافة مستمعي الأحداث لأزرار فلتر المدينة
+        const cityFilterButtons = document.querySelectorAll('.city-filter');
+        cityFilterButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                // إزالة الفئة النشطة من جميع الأزرار
+                cityFilterButtons.forEach(btn => {
+                    btn.classList.remove('active', 'bg-blue-100', 'dark:bg-blue-900', 'text-blue-800', 'dark:text-blue-200');
+                    btn.classList.add('bg-gray-100', 'dark:bg-gray-700', 'text-gray-800', 'dark:text-gray-200');
+                });
+                
+                // إضافة الفئة النشطة للزر المحدد
+                button.classList.add('active', 'bg-blue-100', 'dark:bg-blue-900', 'text-blue-800', 'dark:text-blue-200');
+                button.classList.remove('bg-gray-100', 'dark:bg-gray-700', 'text-gray-800', 'dark:text-gray-200');
+                
+                // تحديث المدينة المحددة في التخزين المحلي
+                const city = button.getAttribute('data-city');
+                localStorage.setItem('selectedCity', city);
+                window.selectedCity = city; // تحديث المتغير العام
+                
+                // تحديث مؤشر المدينة
+                updateCityIndicator(city);
+                
+                // إظهار إشعار للزوار
+                if (window.isVisitor) {
+                    const notification = document.createElement('div');
+                    notification.className = 'fixed bottom-4 right-4 bg-blue-500 text-white p-4 rounded-lg shadow-lg z-50';
+                    notification.style.animation = 'fadeIn 0.5s ease forwards';
+                    notification.innerHTML = `
+                        <div class="flex items-center">
+                            <i class="fas fa-check-circle ml-2"></i>
+                            <span>تم تغيير المدينة إلى ${city === 'duhok' ? 'دهوك' : 'زاخو'}</span>
+                        </div>
+                    `;
+                    document.body.appendChild(notification);
+                    
+                    // إضافة أنماط CSS للرسوم المتحركة إذا لم تكن موجودة
+                    if (!document.getElementById('notification-animations')) {
+                        const styleElement = document.createElement('style');
+                        styleElement.id = 'notification-animations';
+                        styleElement.textContent = `
+                            @keyframes fadeIn {
+                                from { opacity: 0; transform: translateY(10px); }
+                                to { opacity: 1; transform: translateY(0); }
+                            }
+                            @keyframes fadeOut {
+                                from { opacity: 1; transform: translateY(0); }
+                                to { opacity: 0; transform: translateY(10px); }
+                            }
+                        `;
+                        document.head.appendChild(styleElement);
+                    }
+                    
+                    // إزالة الإشعار بعد 3 ثوانٍ
+                    setTimeout(() => {
+                        notification.style.animation = 'fadeOut 0.5s ease forwards';
+                        setTimeout(() => notification.remove(), 500);
+                    }, 3000);
+                }
+                
+                // إعادة تحميل البيانات مع المدينة الجديدة
+                loadPersons();
+            });
+        });
     }
 }
 
@@ -228,6 +348,9 @@ function addChangeCityButton() {
         changeCityItem.appendChild(changeCityLink);
         navContainer.appendChild(changeCityItem);
     }
+    
+    // إضافة فلتر المدينة في أعلى الصفحة للزوار والمستخدمين المسجلين
+    addCityFilterForAll();
 }
 
 // دالة معالجة تغيير حجم الشاشة
@@ -254,6 +377,7 @@ function checkAuthState() {
     auth.onAuthStateChanged(async user => {
         // إضافة متغير عام لتحديد ما إذا كان المستخدم زائرًا
         window.isVisitor = !user;
+        console.log('تم تحديد حالة المستخدم:', window.isVisitor ? 'زائر' : 'مسجل الدخول');
         const loginBtn = document.getElementById('loginBtn');
         const registerBtn = document.getElementById('registerBtn');
         const logoutBtn = document.getElementById('logoutBtn');
@@ -271,6 +395,34 @@ function checkAuthState() {
              
              // تعيين حالة المستخدم كزائر
              window.isVisitor = true;
+             console.log('تأكيد حالة المستخدم كزائر');
+             
+             // إظهار رسالة ترحيبية للزوار حول فلتر المدينة
+             setTimeout(() => {
+                 const welcomeMessage = document.createElement('div');
+                 welcomeMessage.className = 'fixed top-20 left-4 bg-blue-500 text-white p-4 rounded-lg shadow-lg z-50';
+                 welcomeMessage.style.animation = 'fadeIn 0.5s ease forwards';
+                 welcomeMessage.style.maxWidth = '300px';
+                 welcomeMessage.innerHTML = `
+                     <div class="flex items-start">
+                         <i class="fas fa-info-circle text-xl ml-2 mt-1"></i>
+                         <div>
+                             <h4 class="font-bold mb-1">مرحبًا بك!</h4>
+                             <p>يمكنك الآن استخدام فلتر المدينة لعرض البطاقات حسب المدينة.</p>
+                         </div>
+                         <button class="text-white hover:text-gray-200 mr-2" onclick="this.parentNode.parentNode.remove()">
+                             <i class="fas fa-times"></i>
+                         </button>
+                     </div>
+                 `;
+                 document.body.appendChild(welcomeMessage);
+                 
+                 // إزالة الرسالة بعد 8 ثوانٍ
+                 setTimeout(() => {
+                     welcomeMessage.style.animation = 'fadeOut 0.5s ease forwards';
+                     setTimeout(() => welcomeMessage.remove(), 500);
+                 }, 8000);
+             }, 1500);
              
              // إضافة شريط تنبيه للزائر في أعلى الصفحة إذا لم يكن موجودًا
              if (!document.getElementById('visitorBanner')) {
@@ -279,9 +431,14 @@ function checkAuthState() {
                  visitorBanner.id = 'visitorBanner';
                  visitorBanner.className = 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 py-2 text-center';
                  visitorBanner.innerHTML = `
-                     <div class="container mx-auto px-4">
-                         <i class="fas fa-info-circle ml-2"></i>
-                         أنت تتصفح كزائر. <a href="#" id="loginBannerBtn" class="text-blue-600 dark:text-blue-400 underline font-bold">سجل الدخول</a> للوصول إلى جميع الميزات.
+                     <div class="container mx-auto px-4 flex flex-wrap items-center justify-center">
+                         <div class="ml-4">
+                             <i class="fas fa-info-circle ml-2"></i>
+                             أنت تتصفح كزائر. <a href="#" id="loginBannerBtn" class="text-blue-600 dark:text-blue-400 underline font-bold">سجل الدخول</a> للوصول إلى جميع الميزات.
+                         </div>
+                         <div class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm font-medium mr-2">
+                             <i class="fas fa-filter ml-1"></i> فلتر المدينة متاح الآن للزوار
+                         </div>
                      </div>
                  `;
                  document.body.insertBefore(visitorBanner, header);
@@ -1055,12 +1212,26 @@ async function loadPersons() {
         }
         
         // الحصول على المدينة المختارة
-        const selectedCity = localStorage.getItem('selectedCity') || 'duhok';
-        console.log('تحميل البيانات للمدينة:', selectedCity);
+        window.selectedCity = localStorage.getItem('selectedCity') || 'duhok';
+        console.log('تحميل البيانات للمدينة:', window.selectedCity);
         
         // تحقق من حالة تسجيل الدخول
         const user = auth.currentUser;
         console.log('حالة تسجيل الدخول عند تحميل الأشخاص:', user ? `مسجل الدخول (${user.uid})` : 'غير مسجل الدخول');
+        
+        // عرض رسالة تحميل للزوار
+        const personsGrid = document.getElementById('personsGrid');
+        if (!user && personsGrid) {
+            window.isVisitor = true; // تأكيد حالة الزائر
+            personsGrid.innerHTML = `
+                <div class="col-span-full flex justify-center items-center p-10">
+                    <div class="text-center">
+                        <div class="inline-block animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500 mb-4"></div>
+                        <p class="text-lg">جاري تحميل البطاقات في مدينة ${window.selectedCity === 'duhok' ? 'دهوك' : 'زاخو'}...</p>
+                    </div>
+                </div>
+            `;
+        }
         
         // متغيرات لتخزين دور المستخدم
         let userRole = 'visitor'; // زائر افتراضيًا
@@ -1104,18 +1275,45 @@ async function loadPersons() {
         // إضافة قيد المدينة للاستعلام
         // تحويل المدينة المختارة إلى الصيغة المناسبة (أحرف صغيرة) لتتطابق مع القيمة المخزنة
         const normalizedCity = selectedCity.toLowerCase();
+        console.log('المدينة المختارة بعد التحويل:', normalizedCity);
+        
         // تحديد المدن المقابلة للمدينة المختارة
         let cityValues = [];
-        if (normalizedCity === 'duhok') {
-            cityValues = ['duhok', 'دهوك'];
-        } else if (normalizedCity === 'zakho') {
-            cityValues = ['zakho', 'زاخو'];
+        console.log('المدينة المختارة قبل التحويل:', selectedCity);
+        console.log('المدينة المختارة بعد التحويل:', normalizedCity);
+        
+        // تحسين التعرف على المدن بإضافة المزيد من الاحتمالات
+        if (normalizedCity === 'duhok' || normalizedCity === 'دهوك' || normalizedCity.includes('duhok') || normalizedCity.includes('دهوك')) {
+            // إضافة جميع الاحتمالات الممكنة لمدينة دهوك بالعربية والإنجليزية
+            cityValues = [
+                'duhok', 'Duhok', 'DUHOK', 'duhok ', ' duhok', ' duhok ',
+                'دهوك', 'دهوك ', ' دهوك', ' دهوك ', 'دهوك  ', '  دهوك'
+            ];
+            console.log('تم تحديد مدينة دهوك مع كل الاحتمالات');
+        } else if (normalizedCity === 'zakho' || normalizedCity === 'زاخو' || normalizedCity.includes('zakho') || normalizedCity.includes('زاخو')) {
+            // إضافة جميع الاحتمالات الممكنة لمدينة زاخو بالعربية والإنجليزية
+            cityValues = [
+                'zakho', 'Zakho', 'ZAKHO', 'zakho ', ' zakho', ' zakho ',
+                'زاخو', 'زاخو ', ' زاخو', ' زاخو ', 'زاخو  ', '  زاخو'
+            ];
+            console.log('تم تحديد مدينة زاخو مع كل الاحتمالات');
+        } else if (normalizedCity) {
+            // للمدن الأخرى، نضيف الاسم الأصلي مع بعض الاحتمالات
+            cityValues = [normalizedCity, normalizedCity + ' ', ' ' + normalizedCity];
+            console.log('تم تحديد مدينة أخرى:', normalizedCity);
         } else {
-            cityValues = [normalizedCity];
+            console.log('لم يتم تحديد مدينة');
         }
-        // استخدام where in للبحث عن المدينة بالإنجليزية والعربية المقابلة للمدينة المختارة فقط
-        queryConstraints.push(['city', 'in', cityValues]);
-        console.log('تم إضافة قيد المدينة:', normalizedCity, 'مع القيم المقابلة:', cityValues);
+        
+        // استخدام where in للبحث عن المدينة بجميع الصيغ المحتملة
+        // تأكد من أن قيود المدينة تعمل بشكل صحيح للزوار
+        if (cityValues.length > 0) {
+            // إضافة قيد المدينة فقط إذا كان المستخدم ليس زائرًا أو إذا كان زائرًا وتم تحديد مدينة
+            queryConstraints.push(['city', 'in', cityValues]);
+            console.log('تم إضافة قيد المدينة:', normalizedCity, 'مع القيم المقابلة:', cityValues);
+        } else {
+            console.error('خطأ: لم يتم تحديد قيم المدينة بشكل صحيح');
+        }
         
         if (userRole === 'superadmin') {
             // المطور يمكنه الوصول إلى جميع المجموعات
@@ -1136,11 +1334,26 @@ async function loadPersons() {
             }
         } else {
             // الزائر يمكنه الوصول إلى جميع بيانات مجموعة persons
-            console.log('دخول كزائر: عرض جميع البيانات');
+            console.log('دخول كزائر: عرض البيانات حسب المدينة المحددة');
             collectionToLoad = 'persons';
-            // تأكد من أن الزائر يمكنه رؤية بطاقات مدينتي زاخو ودهوك
-            // لا نقوم بإضافة أي قيود إضافية على الاستعلام للزوار
-            // نستخدم فقط قيد المدينة المحدد سابقاً
+            
+            // إعادة تعيين قيود الاستعلام للزوار
+            queryConstraints = [];
+            
+            // تفعيل قيود المدينة للزوار لضمان ظهور البطاقات في المدينة الصحيحة
+            window.isVisitor = true; // تأكيد حالة الزائر
+            
+            // تطبيق قيود المدينة للزوار
+            if (cityValues && cityValues.length > 0) {
+                // لا نضيف قيود المدينة هنا، سنطبقها لاحقاً في استعلام Firestore
+                console.log('سيتم تطبيق فلتر المدينة للزائر في استعلام Firestore');
+            } else {
+                console.log('لم يتم تحديد مدينة للزائر أو القيم غير صالحة - سيتم عرض جميع البطاقات');
+            }
+            
+            console.log('تم تفعيل عرض البطاقات للزوار حسب المدينة المحددة:', selectedCity);
+            console.log('قيود الاستعلام للزائر:', JSON.stringify(queryConstraints));
+            console.log('حالة الزائر في بداية الاستعلام:', window.isVisitor);
         }
         
         try {
@@ -1160,6 +1373,12 @@ async function loadPersons() {
             const user = auth.currentUser;
             console.log('حالة تسجيل الدخول:', user ? 'مسجل الدخول' : 'غير مسجل الدخول');
             
+            // التأكد من تعيين حالة الزائر بشكل صحيح
+            if (!user) {
+                window.isVisitor = true;
+                console.log('تم تعيين حالة المستخدم كزائر بشكل صريح');
+            }
+            
             // Load persons based on user role and collection
             console.log(`جاري جلب بيانات الأشخاص من مجموعة ${collectionToLoad}...`);
             let personsSnapshot;
@@ -1170,11 +1389,54 @@ async function loadPersons() {
                 let query = window.db.collection(collectionToLoad);
                 
                 // تطبيق القيود المحددة للاستعلام إن وجدت
-                if (queryConstraints.length > 0) {
+                if (window.isVisitor) {
+                    // للزوار: تطبيق فلتر المدينة بناءً على المدينة المحددة في localStorage
+                    console.log('تطبيق استعلام خاص للزوار');
+                    
+                    // الحصول على المدينة المحددة من localStorage
+                    window.selectedCity = localStorage.getItem('selectedCity') || 'duhok';
+                    console.log('المدينة المحددة للزائر من localStorage:', window.selectedCity);
+                    
+                    // تحويل المدينة إلى أحرف صغيرة للمقارنة
+                    const normalizedCity = window.selectedCity.toLowerCase();
+                    
+                    // تحديد قيم المدن للفلترة
+                    let cityFilter = [];
+                    if (normalizedCity === 'duhok' || normalizedCity === 'دهوك') {
+                        cityFilter = ['duhok', 'دهوك', 'Duhok', 'DUHOK'];
+                    } else if (normalizedCity === 'zakho' || normalizedCity === 'زاخو') {
+                        cityFilter = ['zakho', 'زاخو', 'Zakho', 'ZAKHO'];
+                    }
+                    
+                    console.log('قيم المدن المتاحة للفلترة:', JSON.stringify(cityFilter));
+                    
+                    // للزوار، نعرض البطاقات بناءً على المدينة المحددة
+                    if (cityFilter.length > 0) {
+                        console.log('تطبيق فلتر المدينة للزائر');
+                        // استخدام استعلام مرن باستخدام قيم المدن المحددة
+                        // تعليق الفلتر للسماح للزوار برؤية جميع البطاقات
+                        // query = query.where('city', 'in', cityFilter);
+                    } else {
+                        // إذا لم يتم تحديد قيم للمدينة، نعرض جميع البطاقات
+                        console.log('لا توجد قيم مدينة محددة للزائر - سيتم عرض جميع البطاقات');
+                    }
+                    console.log('تم تعطيل فلتر المدينة للزوار للسماح بعرض جميع البطاقات');
+                } else if (queryConstraints.length > 0) {
+                    // للمستخدمين المسجلين: تطبيق القيود العادية
                     for (const [field, operator, value] of queryConstraints) {
                         console.log(`تطبيق قيد: ${field} ${operator} ${value}`);
-                        query = query.where(field, operator, value);
+                        
+                        // التحقق من صحة القيم قبل تطبيق القيد
+                        if (value !== undefined && value !== null) {
+                            query = query.where(field, operator, value);
+                        } else {
+                            console.error(`قيمة غير صالحة للحقل ${field}: ${value}`);
+                        }
                     }
+                    // طباعة الاستعلام النهائي للتصحيح
+                    console.log('الاستعلام النهائي:', JSON.stringify(queryConstraints));
+                } else {
+                    console.log('لا توجد قيود استعلام محددة');
                 }
                 
                 // ترتيب البيانات حسب تاريخ الإنشاء للزوار
@@ -1182,10 +1444,55 @@ async function loadPersons() {
                     // إزالة القيد على عدد السجلات للزائر لعرض جميع البطاقات عند التصفية
                     query = query.orderBy('createdAt', 'desc');
                     console.log('تم إزالة القيد على عدد السجلات للزائر لعرض جميع البطاقات');
+                    
+                    // طباعة الاستعلام النهائي للزوار للتصحيح
+                    console.log('الاستعلام النهائي للزوار قبل التنفيذ:', query);
+                    
+                    // التأكد من أن الزائر يمكنه رؤية البطاقات
+                    console.log('حالة الزائر:', window.isVisitor);
+                    console.log('المدينة المحددة للزائر:', window.selectedCity);
                 }
                 
-                personsSnapshot = await query.get();
-                console.log(`تم جلب ${personsSnapshot.size} شخص من مجموعة ${collectionToLoad}`);
+                // تنفيذ الاستعلام وجلب البيانات
+                console.log('بدء تنفيذ الاستعلام للمجموعة:', collectionToLoad);
+                console.log('حالة الزائر قبل تنفيذ الاستعلام:', window.isVisitor);
+                console.log('المدينة المحددة قبل تنفيذ الاستعلام:', window.selectedCity);
+                console.log('قيود الاستعلام النهائية:', JSON.stringify(queryConstraints));
+                
+                try {
+                    console.log('جاري تنفيذ الاستعلام...');
+                    personsSnapshot = await query.get();
+                    console.log(`تم جلب ${personsSnapshot.size} شخص من مجموعة ${collectionToLoad}`);
+                    
+                    // تسجيل معلومات إضافية للتشخيص
+                    if (window.isVisitor) {
+                        console.log('نتائج الاستعلام للزائر:', personsSnapshot.size);
+                        if (personsSnapshot.size === 0) {
+                            console.log('لم يتم العثور على بطاقات للزائر. تحقق من قواعد الأمان وقيود الاستعلام.');
+                        }
+                    }
+                } catch (queryError) {
+                    console.error('خطأ في تنفيذ الاستعلام:', queryError);
+                    console.error('رمز الخطأ:', queryError.code);
+                    console.error('رسالة الخطأ:', queryError.message);
+                    throw queryError;
+                }
+                
+                // طباعة معلومات تفصيلية عن البيانات التي تم جلبها
+                if (personsSnapshot.size === 0) {
+                    console.log('لم يتم العثور على بيانات للمدينة المحددة:', window.selectedCity);
+                } else {
+                    console.log('تم العثور على بيانات للمدينة المحددة:', window.selectedCity);
+                    // طباعة المدن الموجودة في النتائج
+                    const cities = new Set();
+                    personsSnapshot.forEach(doc => {
+                        const data = doc.data();
+                        if (data.city) {
+                            cities.add(data.city);
+                        }
+                    });
+                    console.log('المدن الموجودة في النتائج:', Array.from(cities));
+                }
                 
                 // إذا كان المستخدم صاحب أعمال وتم تفعيل خيار تحميل كلا المجموعتين
                 if (loadBothCollections && userRole === 'user' && userId) {
@@ -1241,10 +1548,59 @@ async function loadPersons() {
             
             // تم إزالة رسالة تنبيه الزوار بناءً على طلب المستخدم
             
+            // التحقق من وجود بطاقات للعرض
+            if (personsSnapshot.size === 0) {
+                // عرض رسالة عندما لا توجد بطاقات للمدينة المحددة
+                personsGrid.innerHTML = `
+                    <div class="col-span-full bg-yellow-100 dark:bg-yellow-900 text-yellow-800 dark:text-yellow-200 p-6 rounded-lg text-center">
+                        <i class="fas fa-info-circle text-4xl mb-4"></i>
+                        <h3 class="text-xl font-bold mb-2">لا توجد بطاقات متاحة</h3>
+                        <p class="mb-4">لم يتم العثور على بطاقات في مدينة ${window.selectedCity === 'duhok' ? 'دهوك' : 'زاخو'}. يرجى تجربة مدينة أخرى.</p>
+                        <div class="flex justify-center space-x-4 space-x-reverse">
+                            <button id="tryOtherCityBtn" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition duration-300">
+                                <i class="fas fa-map-marker-alt ml-2"></i>تجربة مدينة أخرى
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                // إضافة حدث النقر على زر تجربة مدينة أخرى
+                document.getElementById('tryOtherCityBtn').addEventListener('click', () => {
+                    // تبديل المدينة المحددة
+                    const newCity = window.selectedCity === 'duhok' ? 'zakho' : 'duhok';
+                    localStorage.setItem('selectedCity', newCity);
+                    window.selectedCity = newCity;
+                    // تحديث مؤشر المدينة
+                    updateCityIndicator();
+                    // إعادة تحميل البيانات
+                    loadPersons();
+                });
+                
+                return; // الخروج من الدالة بعد عرض الرسالة
+            }
+            
             // Add persons to grid
             personsSnapshot.forEach(doc => {
                 const person = doc.data();
                 const personId = doc.id;
+                
+                // إذا كان الزائر قد حدد مدينة، نعرض فقط البطاقات المطابقة للمدينة المحددة
+                if (window.isVisitor) {
+                    const normalizedCity = window.selectedCity.toLowerCase();
+                    const personCity = (person.city || '').toLowerCase();
+                    
+                    // تحقق مما إذا كانت المدينة مطابقة
+                    const isDuhokMatch = (normalizedCity === 'duhok' || normalizedCity === 'دهوك') && 
+                                       (personCity === 'duhok' || personCity === 'دهوك' || personCity === 'دهوك' || personCity === 'duhok');
+                    const isZakhoMatch = (normalizedCity === 'zakho' || normalizedCity === 'زاخو') && 
+                                       (personCity === 'zakho' || personCity === 'زاخو' || personCity === 'زاخو' || personCity === 'zakho');
+                    
+                    // إذا لم تكن المدينة مطابقة، نتخطى هذه البطاقة
+                    if (!isDuhokMatch && !isZakhoMatch) {
+                        console.log(`تخطي بطاقة لأن المدينة غير مطابقة: ${person.city} != ${window.selectedCity}`);
+                        return;
+                    }
+                }
                 
                 const card = document.createElement('div');
                 card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center person-card';
