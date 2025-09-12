@@ -805,14 +805,14 @@ button:hover {
 .person-card .action-btn {
     background: var(--gradient-mixed);
     border: 2px solid rgba(255, 255, 255, 0.2);
-    width: 42px;
-    height: 42px;
+    width: 36px;
+    height: 36px;
     border-radius: var(--border-radius-full);
     display: flex;
     align-items: center;
     justify-content: center;
     color: #ffffff;
-    font-size: 1.1rem;
+    font-size: 0.95rem;
     cursor: pointer;
     transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     backdrop-filter: blur(5px);
@@ -907,8 +907,8 @@ button:hover {
     }
     
     .person-card .action-btn {
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
         display: flex;
         align-items: center;
@@ -916,6 +916,7 @@ button:hover {
         cursor: pointer;
         transition: all 0.3s ease;
         backdrop-filter: blur(5px);
+        font-size: 0.85rem;
     }
 }
 

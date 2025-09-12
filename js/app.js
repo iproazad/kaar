@@ -383,6 +383,34 @@ function checkAuthState() {
         const logoutBtn = document.getElementById('logoutBtn');
         const dashboardBtn = document.getElementById('dashboardBtn');
         
+        // التحكم في ظهور فلتر المدينة
+        const cityFilterContainer = document.getElementById('cityFilterContainer');
+        if (cityFilterContainer) {
+            if (user) {
+                // إظهار فلتر المدينة للمستخدمين المسجلين فقط
+                cityFilterContainer.classList.remove('hidden');
+                
+                // تعيين المدينة المختارة في الفلتر
+                const cityFilter = document.getElementById('cityFilter');
+                const selectedCity = localStorage.getItem('selectedCity') || 'duhok';
+                if (cityFilter) {
+                    cityFilter.value = selectedCity.toLowerCase();
+                    
+                    // إضافة حدث تغيير المدينة
+                    cityFilter.addEventListener('change', function() {
+                        const newCity = this.value;
+                        localStorage.setItem('selectedCity', newCity);
+                        console.log('تم تغيير المدينة إلى:', newCity);
+                        // إعادة تحميل البيانات بعد تغيير المدينة
+                        loadPersons();
+                    });
+                }
+            } else {
+                // إخفاء فلتر المدينة للزوار
+                cityFilterContainer.classList.add('hidden');
+            }
+        }
+        
         // التأكد من إخفاء جميع الأزرار ما عدا تسجيل الدخول والتسجيل للزائر
          if (!user) {
              console.log('المستخدم غير مسجل الدخول (زائر)');
@@ -424,31 +452,7 @@ function checkAuthState() {
                  }, 8000);
              }, 1500);
              
-             // إضافة شريط تنبيه للزائر في أعلى الصفحة إذا لم يكن موجودًا
-             if (!document.getElementById('visitorBanner')) {
-                 const header = document.querySelector('header');
-                 const visitorBanner = document.createElement('div');
-                 visitorBanner.id = 'visitorBanner';
-                 visitorBanner.className = 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 py-2 text-center';
-                 visitorBanner.innerHTML = `
-                     <div class="container mx-auto px-4 flex flex-wrap items-center justify-center">
-                         <div class="ml-4">
-                             <i class="fas fa-info-circle ml-2"></i>
-                             أنت تتصفح كزائر. <a href="#" id="loginBannerBtn" class="text-blue-600 dark:text-blue-400 underline font-bold">سجل الدخول</a> للوصول إلى جميع الميزات.
-                         </div>
-                         <div class="bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200 px-3 py-1 rounded-full text-sm font-medium mr-2">
-                             <i class="fas fa-filter ml-1"></i> فلتر المدينة متاح الآن للزوار
-                         </div>
-                     </div>
-                 `;
-                 document.body.insertBefore(visitorBanner, header);
-                 
-                 // إضافة حدث النقر على زر تسجيل الدخول في الشريط
-                 document.getElementById('loginBannerBtn').addEventListener('click', (e) => {
-                     e.preventDefault();
-                     document.getElementById('loginModal').classList.remove('hidden');
-                 });
-             }
+             // تم إزالة شريط تنبيه للزائر في أعلى الصفحة
              
              // إخفاء زر الملف الشخصي إذا كان موجودًا
              const userProfileBtn = document.getElementById('userProfileBtn');
@@ -994,6 +998,140 @@ async function handleEditUserProfile(e) {
     }
 }
 
+// عرض تفاصيل الشخص بشكل أنيق
+async function showPersonDetails(person, personId, collectionName = 'persons') {
+    try {
+        // تحضير النافذة المنبثقة
+        const modal = document.getElementById('userProfileModal');
+        const content = document.getElementById('userProfileContent');
+        
+        // تخزين معرف الشخص للاستخدام لاحقًا
+        content.dataset.personId = personId;
+        
+        // إخفاء نموذج التعديل إذا كان ظاهرًا
+        const editForm = document.getElementById('editUserProfileForm');
+        if (editForm) {
+            editForm.classList.add('hidden');
+        }
+        
+        // إخفاء زر التعديل للزوار
+        const editBtn = document.getElementById('editUserProfileBtn');
+        if (editBtn) {
+            // إظهار زر التعديل فقط للمستخدمين المسجلين وأصحاب الملف الشخصي
+            const currentUser = firebase.auth().currentUser;
+            if (currentUser && person.userId === currentUser.uid) {
+                editBtn.classList.remove('hidden');
+            } else {
+                editBtn.classList.add('hidden');
+            }
+        }
+        
+        // تعيين بيانات الشخص
+        const profileImage = document.getElementById('userProfileImage');
+        const profileName = document.getElementById('userProfileName');
+        const profileJob = document.getElementById('userProfileJob');
+        const profileSection = document.getElementById('userProfileSection');
+        
+        // تعيين الصورة مع معالجة الروابط
+        let imageUrl = person.imageUrl || person.image;
+        if (imageUrl) {
+            // تحويل روابط imgBB إلى روابط مباشرة إذا لزم الأمر
+            if (imageUrl.includes('ibb.co/') && !imageUrl.match(/\.(jpg|jpeg|png|gif)$/i)) {
+                try {
+                    imageUrl = await getDirectImageUrl(imageUrl);
+                } catch (error) {
+                    console.error('خطأ في معالجة رابط الصورة:', error);
+                    imageUrl = 'img/default-avatar.png';
+                }
+            }
+        } else {
+            imageUrl = 'img/default-avatar.png';
+        }
+        
+        profileImage.src = imageUrl;
+        profileImage.onerror = function() {
+            this.src = 'img/default-avatar.png';
+            this.onerror = null;
+        };
+        
+        // تعيين الاسم والوظيفة
+        profileName.textContent = person.name || 'غير محدد';
+        profileJob.textContent = person.job || 'غير محدد';
+        
+        // الحصول على اسم القسم
+        let sectionName = 'غير محدد';
+        if (person.sectionId) {
+            try {
+                const sectionDoc = await db.collection('sections').doc(person.sectionId).get();
+                if (sectionDoc.exists) {
+                    sectionName = sectionDoc.data().name;
+                }
+            } catch (error) {
+                console.error('خطأ في جلب اسم القسم:', error);
+            }
+        }
+        profileSection.textContent = sectionName;
+        
+        // إضافة معلومات إضافية إذا كانت متوفرة
+        let additionalInfo = '';
+        
+        // إضافة رقم الهاتف إذا كان متوفرًا
+        if (person.phone) {
+            additionalInfo += `
+            <div class="bg-gray-700 rounded-lg p-4 mb-4 border border-gray-600">
+                <h4 class="text-lg font-semibold text-blue-400 mb-2">معلومات الاتصال</h4>
+                <div class="flex items-center mb-2">
+                    <i class="fas fa-phone text-gray-400 mr-3"></i>
+                    <p class="text-gray-300">${person.phone}</p>
+                </div>
+                <button onclick="window.location.href='tel:${person.phone}'" class="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition duration-300 w-full mt-2">
+                    <i class="fas fa-phone-alt mr-2"></i> اتصال
+                </button>
+            </div>`;
+        }
+        
+        // إضافة المدينة إذا كانت متوفرة
+        if (person.city) {
+            const cityName = person.city === 'duhok' || person.city === 'دهوك' ? 'دهوك' : 
+                          person.city === 'zakho' || person.city === 'زاخو' ? 'زاخو' : person.city;
+            
+            additionalInfo += `
+            <div class="bg-gray-700 rounded-lg p-4 mb-4 border border-gray-600">
+                <h4 class="text-lg font-semibold text-blue-400 mb-2">الموقع</h4>
+                <div class="flex items-center">
+                    <i class="fas fa-map-marker-alt text-gray-400 mr-3"></i>
+                    <p class="text-gray-300">${cityName}</p>
+                </div>
+            </div>`;
+        }
+        
+        // إضافة المعلومات الإضافية إلى العنصر المناسب
+        const additionalInfoContainer = document.querySelector('#userProfileContent .md\\:w-2\\/3');
+        if (additionalInfoContainer) {
+            additionalInfoContainer.innerHTML = additionalInfo || '<p class="text-gray-400 text-center mt-8">لا توجد معلومات إضافية</p>';
+        }
+        
+        // إظهار النافذة المنبثقة
+        modal.classList.remove('hidden');
+        
+        // إضافة حدث لزر الإغلاق
+        const closeBtn = document.getElementById('closeUserProfileModal');
+        if (closeBtn) {
+            // إزالة أي أحداث سابقة لتجنب تكرار الأحداث
+            const newCloseBtn = closeBtn.cloneNode(true);
+            closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
+            
+            newCloseBtn.addEventListener('click', () => {
+                modal.classList.add('hidden');
+            });
+        }
+        
+    } catch (error) {
+        console.error('خطأ في عرض تفاصيل الشخص:', error);
+        alert('حدث خطأ أثناء عرض تفاصيل الشخص. يرجى المحاولة مرة أخرى.');
+    }
+}
+
 // Handle login form submission
 async function handleLogin(e) {
     e.preventDefault();
@@ -1111,6 +1249,28 @@ async function loadSections() {
         const filters = document.querySelectorAll('.category-filter');
         filters.forEach(filter => {
             filter.addEventListener('click', () => {
+                // تحقق من حالة تسجيل الدخول للتصفية
+                const user = auth.currentUser;
+                if (!user) {
+                    // إذا كان زائر، نعرض رسالة تشجيع للتسجيل
+                    Swal.fire({
+                        title: 'ميزة متاحة للمستخدمين المسجلين فقط',
+                        text: 'قم بتسجيل الدخول للوصول إلى ميزة تصفية البطاقات حسب القسم',
+                        icon: 'info',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'تسجيل الدخول',
+                        cancelButtonText: 'لاحقاً'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            document.getElementById('loginBtn').click();
+                        }
+                    });
+                    return;
+                }
+                
+                // للمستخدمين المسجلين: تطبيق التصفية
                 // Remove active class from all filters
                 filters.forEach(f => {
                     f.classList.remove('active', 'bg-blue-100', 'dark:bg-blue-900', 'text-blue-800', 'dark:text-blue-200');
@@ -1126,6 +1286,7 @@ async function loadSections() {
                 filterPersonsByCategory(category);
             });
         });
+        
         
         // Also update the sections table in admin dashboard
         updateSectionsTable(snapshot);
@@ -1289,6 +1450,17 @@ async function loadPersons() {
         let queryConstraints = [];
         let loadBothCollections = false; // متغير للتحكم في تحميل كلا المجموعتين
         
+        // الحصول على المدينة المختارة من فلتر المدينة للمستخدمين المسجلين
+        if (user) {
+            const cityFilter = document.getElementById('cityFilter');
+            if (cityFilter) {
+                // استخدام قيمة فلتر المدينة إذا كان المستخدم مسجل الدخول
+                window.selectedCity = cityFilter.value;
+                localStorage.setItem('selectedCity', window.selectedCity);
+                console.log('تم تحديث المدينة المختارة من فلتر المدينة:', window.selectedCity);
+            }
+        }
+        
         // إضافة قيد المدينة للاستعلام
         // تحويل المدينة المختارة إلى الصيغة المناسبة (أحرف صغيرة) لتتطابق مع القيمة المخزنة
         const normalizedCity = selectedCity.toLowerCase();
@@ -1439,31 +1611,25 @@ async function loadPersons() {
                     }
                     console.log('تم تعطيل فلتر المدينة للزوار للسماح بعرض جميع البطاقات');
                     
-                    // إضافة رسالة للزوار بعد تحميل البطاقات
+                    // تم إزالة رسالة تصفية متقدمة للبطاقات للزوار
                     setTimeout(() => {
                         const personsGrid = document.getElementById('personsGrid');
                         if (personsGrid && window.isVisitor) {
-                            // إضافة رسالة تشجيع للتسجيل في أعلى الشبكة
-                            const filterMessage = document.createElement('div');
-                            filterMessage.className = 'col-span-full mb-6 p-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 backdrop-blur-sm rounded-xl border border-blue-500/20 shadow-lg';
-                            filterMessage.innerHTML = `
-                                <div class="flex flex-col md:flex-row items-center justify-between">
-                                    <div class="mb-4 md:mb-0">
-                                        <p class="text-lg font-medium bg-gradient-to-r from-blue-500 to-purple-600 bg-clip-text text-transparent">تصفية متقدمة للبطاقات</p>
-                                        <p class="text-gray-600 dark:text-gray-300 mt-1">سجل دخولك للوصول إلى ميزة تصفية البطاقات حسب المدينة والقسم</p>
-                                    </div>
-                                    <button id="filterLoginBtn" class="px-6 py-2 bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-full hover:shadow-lg transform hover:scale-105 transition duration-300 ease-in-out">
-                                        <i class="fas fa-filter mr-2"></i> تسجيل الدخول للتصفية
-                                    </button>
-                                </div>
-                            `;
+                            // تم إزالة رسالة تشجيع للتسجيل في أعلى الشبكة
                             
-                            // إضافة العنصر في بداية الشبكة
-                            if (personsGrid.firstChild) {
-                                personsGrid.insertBefore(filterMessage, personsGrid.firstChild);
-                            } else {
-                                personsGrid.appendChild(filterMessage);
-                            }
+                            // إضافة مستمع حدث لزر تسجيل الدخول للتصفية
+                            setTimeout(() => {
+                                const filterLoginBtn = document.getElementById('filterLoginBtn');
+                                if (filterLoginBtn) {
+                                    filterLoginBtn.addEventListener('click', () => {
+                                        // فتح نافذة تسجيل الدخول
+                                        const loginModal = new bootstrap.Modal(document.getElementById('loginModal'));
+                                        loginModal.show();
+                                    });
+                                }
+                            }, 100);
+                            
+                            // تم إضافة العنصر بالفعل في الخطوة السابقة
                             
                             // إضافة مستمع حدث لزر تسجيل الدخول
                             const filterLoginBtn = document.getElementById('filterLoginBtn');
