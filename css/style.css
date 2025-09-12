@@ -1327,25 +1327,6 @@ nav.bg-white.dark\:bg-gray-800.shadow-sm {
     animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
-/* Modal Styles */
-.modal {
-    animation: fadeIn 0.3s ease-out;
-}
-
-/* Full Image Modal Styles */
-.max-h-90vh {
-    max-height: 90vh;
-}
-
-#fullImageModal {
-    animation: fadeIn 0.3s ease-out;
-}
-
-#fullImageModal img {
-    transition: transform 0.3s ease;
-    box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
-}
-
 /* Notification Card Styles - تحسين أنماط بطاقات الإشعارات */
 .notification-card {
     background: linear-gradient(145deg, var(--dark-card), var(--dark-card-accent));

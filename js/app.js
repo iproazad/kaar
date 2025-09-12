@@ -542,30 +542,16 @@ function setupEventListeners() {
     });
     
     // Confirmation modal
-const closeConfirmationModal = document.getElementById('closeConfirmationModal');
-const cancelDelete = document.getElementById('cancelDelete');
-
-closeConfirmationModal.addEventListener('click', () => {
-    document.getElementById('confirmationModal').classList.add('hidden');
-});
-
-cancelDelete.addEventListener('click', () => {
-    document.getElementById('confirmationModal').classList.add('hidden');
-});
-
-// Full Image modal
-const closeFullImageModal = document.getElementById('closeFullImageModal');
-closeFullImageModal.addEventListener('click', () => {
-    document.getElementById('fullImageModal').classList.add('hidden');
-});
-
-// إغلاق النافذة المنبثقة للصورة عند النقر خارجها
-document.getElementById('fullImageModal').addEventListener('click', (e) => {
-    // إذا كان النقر على الخلفية وليس على الصورة نفسها
-    if (e.target.id === 'fullImageModal') {
-        document.getElementById('fullImageModal').classList.add('hidden');
-    }
-});
+    const closeConfirmationModal = document.getElementById('closeConfirmationModal');
+    const cancelDelete = document.getElementById('cancelDelete');
+    
+    closeConfirmationModal.addEventListener('click', () => {
+        document.getElementById('confirmationModal').classList.add('hidden');
+    });
+    
+    cancelDelete.addEventListener('click', () => {
+        document.getElementById('confirmationModal').classList.add('hidden');
+    });
     
     // Search functionality
     const searchInput = document.getElementById('searchInput');
@@ -1149,12 +1135,12 @@ async function loadPersons() {
                 queryConstraints.push(['city', '==', selectedCity]);
             }
         } else {
-            // الزائر يمكنه الوصول إلى بيانات محدودة من مجموعة persons
-            console.log('دخول كزائر: عرض بيانات محدودة');
+            // الزائر يمكنه الوصول إلى جميع بيانات مجموعة persons
+            console.log('دخول كزائر: عرض جميع البيانات');
             collectionToLoad = 'persons';
-            // تحديد عدد السجلات التي يمكن للزائر رؤيتها (10 سجلات فقط)
-            const visitorLimit = 10;
-            console.log(`تم تحديد عرض ${visitorLimit} سجلات فقط للزائر`);
+            // تأكد من أن الزائر يمكنه رؤية بطاقات مدينتي زاخو ودهوك
+            // لا نقوم بإضافة أي قيود إضافية على الاستعلام للزوار
+            // نستخدم فقط قيد المدينة المحدد سابقاً
         }
         
         try {
@@ -1282,19 +1268,10 @@ async function loadPersons() {
                 `;
                 
                 // إضافة أحداث النقر للبطاقة وأزرار التفاعل
-const viewDetailsHandler = () => {
-    // عرض الصورة بالكامل عند النقر على أيقونة العين
-    const imageUrl = convertImgBBUrl(person.image) || 'img/default-avatar.png';
-    const fullImageModal = document.getElementById('fullImageModal');
-    const fullSizeImage = document.getElementById('fullSizeImage');
-    
-    // تعيين مصدر الصورة
-    fullSizeImage.src = imageUrl;
-    fullSizeImage.alt = person.name || 'صورة كاملة';
-    
-    // إظهار النافذة المنبثقة
-    fullImageModal.classList.remove('hidden');
-};
+                const viewDetailsHandler = () => {
+                    // عرض التفاصيل الكاملة لجميع المستخدمين (بما في ذلك الزوار)
+                    showPersonDetails(person, personId, collectionToLoad);
+                };
                 
                 // إضافة حدث النقر للبطاقة نفسها
                 card.addEventListener('click', (e) => {
@@ -1319,16 +1296,8 @@ const viewDetailsHandler = () => {
                 if (callBtn && person.phone) {
                     callBtn.addEventListener('click', (e) => {
                         e.stopPropagation(); // منع انتشار الحدث للبطاقة
-                        // للزوار: طلب تسجيل الدخول
-                        if (window.isVisitor) {
-                            const confirmCall = confirm('للاتصال بهذا الشخص، يرجى تسجيل الدخول أولاً. هل تريد تسجيل الدخول الآن؟');
-                            if (confirmCall) {
-                                document.getElementById('loginModal').classList.remove('hidden');
-                            }
-                        } else {
-                            // للمستخدمين المسجلين: فتح تطبيق الاتصال
-                            window.location.href = `tel:${person.phone}`;
-                        }
+                        // السماح لجميع المستخدمين (بما في ذلك الزوار) بالاتصال
+                        window.location.href = `tel:${person.phone}`;
                     });
                 }
                 
