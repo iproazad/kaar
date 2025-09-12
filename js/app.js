@@ -1264,7 +1264,6 @@ async function loadPersons() {
                     <div class="city-badge">${person.city === 'zakho' || person.city === 'زاخو' ? 'مدينة زاخو' : 'مدينة دهوك'}</div>
                     <div class="card-actions">
                         <button class="action-btn view-btn" title="عرض التفاصيل"><i class="fas fa-eye"></i></button>
-                        <button class="action-btn contact-btn" title="تواصل"><i class="fas fa-envelope"></i></button>
                         ${person.phone ? `<button class="action-btn call-btn" title="اتصال"><i class="fas fa-phone"></i></button>` : ''}
                     </div>
                 `;
@@ -1293,7 +1292,6 @@ async function loadPersons() {
                 
                 // إضافة أحداث النقر لأزرار التفاعل
                 const viewBtn = card.querySelector('.view-btn');
-                const contactBtn = card.querySelector('.contact-btn');
                 const callBtn = card.querySelector('.call-btn');
                 
                 if (viewBtn) {
@@ -1303,22 +1301,6 @@ async function loadPersons() {
                     });
                 }
                 
-                if (contactBtn) {
-                    contactBtn.addEventListener('click', (e) => {
-                        e.stopPropagation(); // منع انتشار الحدث للبطاقة
-                        // للزوار: طلب تسجيل الدخول
-                        if (window.isVisitor) {
-                            const confirmContact = confirm('للتواصل مع هذا الشخص، يرجى تسجيل الدخول أولاً. هل تريد تسجيل الدخول الآن؟');
-                            if (confirmContact) {
-                                document.getElementById('loginModal').classList.remove('hidden');
-                            }
-                        } else {
-                            // للمستخدمين المسجلين: عرض نافذة التواصل
-                            alert(`سيتم قريباً إضافة ميزة التواصل مع ${person.name}`);
-                            // هنا يمكن إضافة كود لفتح نافذة التواصل أو إرسال رسالة
-                        }
-                    });
-                }
                 
                 if (callBtn && person.phone) {
                     callBtn.addEventListener('click', (e) => {
