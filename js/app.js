@@ -542,16 +542,30 @@ function setupEventListeners() {
     });
     
     // Confirmation modal
-    const closeConfirmationModal = document.getElementById('closeConfirmationModal');
-    const cancelDelete = document.getElementById('cancelDelete');
-    
-    closeConfirmationModal.addEventListener('click', () => {
-        document.getElementById('confirmationModal').classList.add('hidden');
-    });
-    
-    cancelDelete.addEventListener('click', () => {
-        document.getElementById('confirmationModal').classList.add('hidden');
-    });
+const closeConfirmationModal = document.getElementById('closeConfirmationModal');
+const cancelDelete = document.getElementById('cancelDelete');
+
+closeConfirmationModal.addEventListener('click', () => {
+    document.getElementById('confirmationModal').classList.add('hidden');
+});
+
+cancelDelete.addEventListener('click', () => {
+    document.getElementById('confirmationModal').classList.add('hidden');
+});
+
+// Full Image modal
+const closeFullImageModal = document.getElementById('closeFullImageModal');
+closeFullImageModal.addEventListener('click', () => {
+    document.getElementById('fullImageModal').classList.add('hidden');
+});
+
+// إغلاق النافذة المنبثقة للصورة عند النقر خارجها
+document.getElementById('fullImageModal').addEventListener('click', (e) => {
+    // إذا كان النقر على الخلفية وليس على الصورة نفسها
+    if (e.target.id === 'fullImageModal') {
+        document.getElementById('fullImageModal').classList.add('hidden');
+    }
+});
     
     // Search functionality
     const searchInput = document.getElementById('searchInput');
@@ -1268,18 +1282,19 @@ async function loadPersons() {
                 `;
                 
                 // إضافة أحداث النقر للبطاقة وأزرار التفاعل
-                const viewDetailsHandler = () => {
-                    // للزوار: عرض نافذة تسجيل الدخول عند محاولة عرض التفاصيل
-                    if (window.isVisitor) {
-                        const confirmView = confirm('للاطلاع على التفاصيل الكاملة، يرجى تسجيل الدخول. هل تريد تسجيل الدخول الآن؟');
-                        if (confirmView) {
-                            document.getElementById('loginModal').classList.remove('hidden');
-                        }
-                    } else {
-                        // للمستخدمين المسجلين: عرض التفاصيل الكاملة
-                        showPersonDetails(person, personId, collectionToLoad);
-                    }
-                };
+const viewDetailsHandler = () => {
+    // عرض الصورة بالكامل عند النقر على أيقونة العين
+    const imageUrl = convertImgBBUrl(person.image) || 'img/default-avatar.png';
+    const fullImageModal = document.getElementById('fullImageModal');
+    const fullSizeImage = document.getElementById('fullSizeImage');
+    
+    // تعيين مصدر الصورة
+    fullSizeImage.src = imageUrl;
+    fullSizeImage.alt = person.name || 'صورة كاملة';
+    
+    // إظهار النافذة المنبثقة
+    fullImageModal.classList.remove('hidden');
+};
                 
                 // إضافة حدث النقر للبطاقة نفسها
                 card.addEventListener('click', (e) => {
