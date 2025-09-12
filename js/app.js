@@ -1256,7 +1256,6 @@ async function loadPersons() {
                 card.innerHTML = `
                     <div class="image-container mb-4">
                         <img src="${imageUrl}" alt="${person.name}" class="w-32 h-32 object-cover rounded-full" onerror="this.src='img/default-avatar.png'; this.onerror=null;">
-                        <div class="role-badge">${person.job ? person.job.substring(0, 1).toUpperCase() : '?'}</div>
                     </div>
                     <h3 class="text-xl font-semibold text-gray-800 dark:text-white mb-2 text-center">${person.name}</h3>
                     <p class="text-gray-600 dark:text-gray-300 mb-1 text-center">${person.job}</p>

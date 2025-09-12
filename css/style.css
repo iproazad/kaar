@@ -301,32 +301,7 @@ button:hover {
     margin-bottom: 1rem;
 }
 
-.person-card .role-badge {
-    position: absolute;
-    bottom: 0;
-    right: 0;
-    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-    color: white;
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    font-size: 1rem;
-    font-weight: 700;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    opacity: 0.9;
-    transform: translate(5px, 5px);
-    transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    border: 2px solid rgba(255, 255, 255, 0.3);
-}
 
-.person-card:hover .role-badge {
-    transform: translate(0, 0) scale(1.1);
-    opacity: 1;
-    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.4);
-}
 
 /* Interactive Action Buttons - أزرار تفاعلية محسنة */
 .person-card .card-actions {
