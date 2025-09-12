@@ -1058,18 +1058,8 @@ async function showPersonDetails(person, personId, collectionName = 'persons') {
         profileName.textContent = person.name || 'غير محدد';
         profileJob.textContent = person.job || 'غير محدد';
         
-        // الحصول على اسم القسم
-        let sectionName = 'غير محدد';
-        if (person.sectionId) {
-            try {
-                const sectionDoc = await db.collection('sections').doc(person.sectionId).get();
-                if (sectionDoc.exists) {
-                    sectionName = sectionDoc.data().name;
-                }
-            } catch (error) {
-                console.error('خطأ في جلب اسم القسم:', error);
-            }
-        }
+        // تعيين اسم القسم مباشرة من بيانات الشخص
+        let sectionName = person.section || 'غير محدد';
         profileSection.textContent = sectionName;
         
         // إضافة معلومات إضافية إذا كانت متوفرة
