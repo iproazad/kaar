@@ -1213,9 +1213,11 @@ button:hover {
         filter: brightness(1.1);
     }
     
-    /* إخفاء النص واظهار الأيقونة فقط في الشاشات الصغيرة جدًا */
+    /* عرض النص والأيقونة في الشاشات الصغيرة جدًا - تم التعديل */
     #loginBtn span, #registerBtn span, #dashboardBtn span, #logoutBtn span {
-        display: none;
+        display: inline-block;
+        margin-right: 0.25rem;
+        font-size: 0.85rem;
     }
     
     /* تحسين مظهر الأيقونات في الأزرار على الشاشات الصغيرة */
