@@ -1214,8 +1214,16 @@ async function loadSections() {
         let snapshot;
         try {
             console.log('Attempting to fetch sections from server...');
-            snapshot = await window.db.collection('sections').get();
+            // تأكد من جلب جميع الأقسام بترتيب تاريخ الإنشاء
+            snapshot = await window.db.collection('sections').orderBy('createdAt', 'desc').get();
             console.log('Sections fetched successfully:', snapshot.size, 'sections found');
+            
+            // طباعة أسماء الأقسام التي تم جلبها للتشخيص
+            const sectionNames = [];
+            snapshot.forEach(doc => {
+                sectionNames.push(doc.data().name);
+            });
+            console.log('أسماء الأقسام التي تم جلبها:', sectionNames);
         } catch (fetchError) {
             console.error('Error fetching sections:', fetchError);
             console.log('رمز الخطأ:', fetchError.code);
@@ -1253,6 +1261,31 @@ async function loadSections() {
             <button class="category-filter active bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-4 py-2 rounded-lg transition duration-300" data-category="all">الكل</button>
         `;
         
+        // إضافة زر "الكل" إلى عنصر sectionFilter إذا كان موجودًا
+        const sectionFilterContainer = document.getElementById('sectionFilter');
+        if (sectionFilterContainer) {
+            // مسح المحتوى الحالي
+            sectionFilterContainer.innerHTML = '';
+            
+            // إضافة زر "الكل"
+            const allButton = document.createElement('button');
+            allButton.className = 'filter-btn active';
+            allButton.textContent = 'الكل';
+            allButton.setAttribute('data-category', 'all');
+            allButton.addEventListener('click', function() {
+                // إزالة الفئة النشطة من جميع الأزرار
+                document.querySelectorAll('#sectionFilter .filter-btn').forEach(btn => {
+                    btn.classList.remove('active');
+                });
+                // إضافة الفئة النشطة للزر الحالي
+                this.classList.add('active');
+                // تطبيق التصفية
+                filterPersonsByCategory('all');
+            });
+            sectionFilterContainer.appendChild(allButton);
+            console.log('تم إنشاء زر تصفية "الكل" في sectionFilter');
+        }
+        
         // Clear dropdown options
         personSection.innerHTML = '';
         editPersonSection.innerHTML = '';
@@ -1268,6 +1301,27 @@ async function loadSections() {
             filterButton.setAttribute('data-category', section.name);
             filterButton.textContent = section.name;
             categoryFilters.appendChild(filterButton);
+            
+            // أيضًا أضف إلى عنصر sectionFilter إذا كان موجودًا (للتصفية حسب القسم)
+            const sectionFilterContainer = document.getElementById('sectionFilter');
+            if (sectionFilterContainer) {
+                const sectionFilterBtn = document.createElement('button');
+                sectionFilterBtn.className = 'filter-btn';
+                sectionFilterBtn.textContent = section.name;
+                sectionFilterBtn.setAttribute('data-category', section.name);
+                sectionFilterBtn.addEventListener('click', function() {
+                    // إزالة الفئة النشطة من جميع الأزرار
+                    document.querySelectorAll('#sectionFilter .filter-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    // إضافة الفئة النشطة للزر الحالي
+                    this.classList.add('active');
+                    // تطبيق التصفية
+                    filterPersonsByCategory(section.name);
+                });
+                sectionFilterContainer.appendChild(sectionFilterBtn);
+                console.log(`تم إضافة زر تصفية للقسم: ${section.name}`);
+            }
             
             // Add to person section dropdown
             const option = document.createElement('option');
@@ -1832,9 +1886,19 @@ async function loadPersons() {
             }
             
             // Add persons to grid
+            console.log('بدء إضافة البطاقات إلى الشبكة...');
+            let cardsAdded = 0;
+            const sectionsFound = new Set();
+            
             personsSnapshot.forEach(doc => {
                 const person = doc.data();
                 const personId = doc.id;
+                
+                // تسجيل معلومات القسم للتشخيص
+                if (person.section) {
+                    sectionsFound.add(person.section);
+                    console.log(`وجدت بطاقة في القسم: ${person.section}`);
+                }
                 
                 // إذا كان الزائر قد حدد مدينة، نعرض فقط البطاقات المطابقة للمدينة المحددة
                 if (window.isVisitor) {
@@ -1856,7 +1920,19 @@ async function loadPersons() {
                 
                 const card = document.createElement('div');
                 card.className = 'bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 flex flex-col items-center person-card';
-                card.setAttribute('data-category', person.section);
+                
+                // تأكد من تعيين القسم بشكل صحيح للبطاقة
+                if (person.section) {
+                    card.setAttribute('data-category', person.section.trim());
+                    console.log(`تم تعيين القسم للبطاقة: ${person.section.trim()}`);
+                } else {
+                    card.setAttribute('data-category', '');
+                }
+                
+                // إضافة معرف القسم للبطاقة إذا كان متاحًا
+                if (person.sectionId) {
+                    card.setAttribute('data-section-id', person.sectionId);
+                }
                 
                 // تحسين عرض الصور على الأجهزة المحمولة باستخدام التحميل الكسول
                 const imageUrl = convertImgBBUrl(person.image) || 'img/default-avatar.png';
@@ -1911,10 +1987,23 @@ async function loadPersons() {
                 }
                 
                 personsGrid.appendChild(card);
+                cardsAdded++;
             });
+            
+            // عرض ملخص البطاقات التي تم إضافتها
+            console.log(`تم إضافة ${cardsAdded} بطاقة إلى الشبكة`);
+            console.log('الأقسام الموجودة في البطاقات:', Array.from(sectionsFound));
             
             // تطبيق الأنماط على البطاقات بعد إضافتها
             applyCardStyles();
+            
+            // إعادة تطبيق الفلتر الحالي إذا كان هناك فلتر نشط
+            const activeFilter = document.querySelector('#sectionFilter .filter-btn.active');
+            if (activeFilter) {
+                const activeCategory = activeFilter.getAttribute('data-category');
+                console.log(`إعادة تطبيق الفلتر النشط: ${activeCategory}`);
+                filterPersonsByCategory(activeCategory);
+            }
             
             // تفعيل التحميل الكسول للصور لتحسين الأداء على الأجهزة المحمولة
             setTimeout(() => {
@@ -2312,6 +2401,32 @@ function filterPersonsByCategory(category) {
     });
     console.log('الفئات الموجودة في البطاقات:', Array.from(existingCategories));
     
+    // إعادة تحميل الأقسام إذا كانت الفئة المطلوبة غير موجودة في البطاقات
+    if (targetCategory !== 'all' && !existingCategories.has(targetCategory)) {
+        console.warn(`القسم المطلوب "${targetCategory}" غير موجود في البطاقات الحالية. جاري إعادة تحميل البيانات...`);
+        
+        // إعادة تحميل البيانات تلقائيًا
+        loadPersons().then(() => {
+            console.log(`تم إعادة تحميل البيانات للقسم: ${targetCategory}`);
+            
+            // تحقق مرة أخرى بعد إعادة التحميل
+            setTimeout(() => {
+                const updatedCards = document.querySelectorAll('.person-card');
+                let found = false;
+                updatedCards.forEach(card => {
+                    const cardCategory = card.getAttribute('data-category');
+                    if (cardCategory && cardCategory.trim().toLowerCase() === targetCategory.trim().toLowerCase()) {
+                        found = true;
+                    }
+                });
+                
+                if (!found) {
+                    console.warn(`لا تزال لا توجد بطاقات في القسم "${targetCategory}" بعد إعادة التحميل.`);
+                }
+            }, 1000);
+        });
+    }
+    
     // إزالة أي رسائل سابقة لعدم وجود نتائج
     const personsGrid = document.getElementById('personsGrid');
     if (personsGrid) {
@@ -2330,7 +2445,8 @@ function filterPersonsByCategory(category) {
         console.log('فئة البطاقة:', cardCategory, 'الفئة المطلوبة:', targetCategory);
         
         // إظهار البطاقة إذا كانت الفئة هي 'all' أو تطابق الفئة المطلوبة
-        if (targetCategory === 'all' || cardCategory === targetCategory) {
+        if (targetCategory === 'all' || 
+            (cardCategory && cardCategory.trim().toLowerCase() === targetCategory.trim().toLowerCase())) {
             // استخدام فقط طريقة واحدة للإظهار لتجنب التعارض
             card.style.display = 'flex';
             card.classList.remove('hidden');
@@ -2359,8 +2475,27 @@ function filterPersonsByCategory(category) {
             noResultsMessage.innerHTML = `
                 <i class="fas fa-info-circle text-4xl mb-4"></i>
                 <h3 class="text-xl font-bold mb-2">لا توجد بطاقات في هذا القسم</h3>
-                <p>لم يتم العثور على بطاقات في قسم "${category}". يرجى تجربة قسم آخر.</p>
+                <p>لم يتم العثور على بطاقات في قسم "${category}". يرجى تجربة قسم آخر أو إضافة بطاقات جديدة لهذا القسم.</p>
+                <div class="mt-4">
+                    <button id="reloadDataBtn" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md">
+                        <i class="fas fa-sync-alt mr-2"></i> إعادة تحميل البيانات
+                    </button>
+                </div>
             `;
+            
+            // إضافة مستمع حدث لزر إعادة التحميل
+            setTimeout(() => {
+                const reloadBtn = document.getElementById('reloadDataBtn');
+                if (reloadBtn) {
+                    reloadBtn.addEventListener('click', () => {
+                        console.log('إعادة تحميل البيانات...');
+                        loadPersons().then(() => {
+                            // إعادة تطبيق الفلتر بعد إعادة التحميل
+                            filterPersonsByCategory(category);
+                        });
+                    });
+                }
+            }, 100);
             
             // إزالة أي رسائل سابقة
             const existingMessage = personsGrid.querySelector('.no-results-message');
