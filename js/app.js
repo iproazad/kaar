@@ -157,6 +157,30 @@ function applyCardStyles() {
 function initApp() {
     console.log('بدء تهيئة التطبيق...');
     
+    // التحقق من حالة المستخدم عند بدء التطبيق
+    // إذا لم يكن هناك مستخدم مسجل، نضيف نمط CSS لإخفاء أزرار المسؤول
+    if (!auth.currentUser) {
+        const initialStyle = document.createElement('style');
+        initialStyle.id = 'visitor-buttons-style';
+        initialStyle.textContent = `
+            #dashboardBtn {
+                display: none !important;
+            }
+            #logoutBtn {
+                display: none !important;
+            }
+            /* إخفاء أي أزرار أخرى قد تظهر للمسؤولين فقط */
+            .admin-only-button {
+                display: none !important;
+            }
+            /* تأكيد إظهار أزرار تسجيل الدخول والتسجيل فقط */
+            #loginBtn, #registerBtn {
+                display: inline-flex !important;
+            }
+        `;
+        document.head.appendChild(initialStyle);
+    }
+    
     // إضافة أنماط CSS للرسوم المتحركة
     if (!document.getElementById('animation-styles')) {
         const styleElement = document.createElement('style');
@@ -468,6 +492,33 @@ function checkAuthState() {
              logoutBtn.classList.add('hidden');
              dashboardBtn.classList.add('hidden');
              
+             // التأكد من إخفاء زر لوحة التحكم على الموبايل أيضًا
+             // إضافة نمط CSS لإخفاء زر لوحة التحكم على جميع الأجهزة للزوار
+             const styleElement = document.createElement('style');
+             styleElement.id = 'visitor-buttons-style';
+             styleElement.textContent = `
+                 #dashboardBtn {
+                     display: none !important;
+                 }
+                 #logoutBtn {
+                     display: none !important;
+                 }
+                 /* إخفاء أي أزرار أخرى قد تظهر للمسؤولين فقط */
+                 .admin-only-button {
+                     display: none !important;
+                 }
+                 /* تأكيد إظهار أزرار تسجيل الدخول والتسجيل فقط */
+                 #loginBtn, #registerBtn {
+                     display: inline-flex !important;
+                 }
+             `;
+             // إزالة النمط القديم إذا كان موجودًا
+             const oldStyle = document.getElementById('visitor-buttons-style');
+             if (oldStyle) {
+                 oldStyle.remove();
+             }
+             document.head.appendChild(styleElement);
+             
              // تعيين حالة المستخدم كزائر
              window.isVisitor = true;
              console.log('تأكيد حالة المستخدم كزائر');
@@ -522,6 +573,12 @@ function checkAuthState() {
         
         // تعيين حالة المستخدم كمستخدم مسجل
         window.isVisitor = false;
+        
+        // إزالة نمط CSS الذي يخفي الأزرار للزوار
+        const visitorStyle = document.getElementById('visitor-buttons-style');
+        if (visitorStyle) {
+            visitorStyle.remove();
+        }
         
         // إزالة شريط تنبيه الزائر إذا كان موجودًا
         const visitorBanner = document.getElementById('visitorBanner');
